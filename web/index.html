@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROSE - PMSE Estate Road & Accelerometer Analytics</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="static/leaflet.css" />
+  
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #334155;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #22c55e;
+      --warning: #eab308;
+      --orange: #f97316;
+      --danger: #ef4444;
+      --purple: #a855f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Top Navigation Bar */
+    header {
+      background-color: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      z-index: 1000;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand .logo {
+      background: linear-gradient(135deg, #3b82f6, #10b981);
+      color: white;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+    }
+
+    .brand h1 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand .subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-group {
+      display: flex;
+      background: #0f172a;
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-pill {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-pill:hover {
+      color: #fff;
+    }
+
+    .btn-pill.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    }
+
+    .select-custom {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 8px;
+      outline: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .select-custom:focus {
+      border-color: var(--primary);
+    }
+
+    .action-btn {
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: #64748b;
+    }
+
+    .action-btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .action-btn.primary:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Main Container */
+    #main-container {
+      flex: 1;
+      position: relative;
+      display: flex;
+      overflow: hidden;
+    }
+
+    #map {
+      flex: 1;
+      height: 100%;
+      background: #0a0f1d;
+    }
+
+    /* Floating Filters & Search Overlay */
+    .floating-panel {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      z-index: 800;
+      background: rgba(30, 41, 59, 0.88);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      width: 290px;
+      max-height: calc(100% - 150px);
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+    }
+
+    .floating-panel h3 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .search-box {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      padding: 7px 10px;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 12px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+
+    .search-box:focus {
+      border-color: var(--primary);
+    }
+
+    .filter-section {
+      margin-bottom: 12px;
+    }
+
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .chip {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      padding: 3px 8px;
+      font-size: 11px;
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text-muted);
+      user-select: none;
+      transition: all 0.15s;
+    }
+
+    .chip:hover {
+      color: #fff;
+      border-color: #64748b;
+    }
+
+    .chip.active {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: var(--primary);
+      color: #60a5fa;
+      font-weight: 600;
+    }
+
+    .condition-filter-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      margin-top: 5px;
+      cursor: pointer;
+    }
+
+    .dot-badge {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot-green { background: var(--success); }
+    .dot-yellow { background: var(--warning); }
+    .dot-orange { background: var(--orange); }
+    .dot-red { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+
+    /* Time Filter Styles */
+    .time-filter-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #0f172a;
+      padding: 3px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .time-input {
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 3px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 5px;
+      outline: none;
+      color-scheme: dark;
+      cursor: pointer;
+    }
+
+    .time-input:focus {
+      border-color: var(--primary);
+    }
+
+    .time-reset-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 11px;
+      transition: all 0.15s;
+    }
+
+    .time-reset-btn:hover {
+      color: #fff;
+      background: var(--bg-card-hover);
+      border-color: #475569;
+    }
+
+    .time-inputs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .time-field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .time-field label {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .time-field .time-input {
+      width: 100%;
+      padding: 5px 6px;
+      font-size: 11px;
+    }
+
+    .dual-slider-box {
+      position: relative;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      margin: 4px 0 6px 0;
+    }
+
+    .dual-slider-track {
+      position: absolute;
+      width: 100%;
+      height: 5px;
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      z-index: 1;
+    }
+
+    .dual-slider-fill {
+      position: absolute;
+      height: 5px;
+      background: var(--primary);
+      border-radius: 3px;
+      z-index: 2;
+    }
+
+    .dual-range-input {
+      position: absolute;
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      pointer-events: none;
+      z-index: 3;
+      margin: 0;
+    }
+
+    .dual-range-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      pointer-events: auto;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #60a5fa;
+      border: 2px solid #fff;
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(59, 130, 246, 0.8);
+    }
+
+    .time-bounds-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    /* Map Legend Overlay */
+    .map-legend {
+      position: absolute;
+      bottom: 75px;
+      left: 15px;
+      z-index: 800;
+      background: rgba(30, 41, 59, 0.88);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 11px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .map-legend h4 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .legend-line {
+      width: 20px;
+      height: 4px;
+      border-radius: 2px;
+    }
+
+    /* Simulation & Playback Bar */
+    #playback-bar {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 900;
+      background: rgba(30, 41, 59, 0.94);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 14px;
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      width: min(850px, 94%);
+    }
+
+    .play-btn {
+      background: var(--primary);
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4);
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .play-btn:hover {
+      background: var(--primary-hover);
+      transform: scale(1.05);
+    }
+
+    .scrub-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .scrub-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .scrub-slider {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      background: #0f172a;
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .scrub-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #60a5fa;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(96, 165, 250, 0.8);
+    }
+
+    .hud-metrics {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: #0f172a;
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .hud-item {
+      display: flex;
+      flex-direction: column;
+      text-align: right;
+    }
+
+    .hud-item .val {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .hud-item .lbl {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* Segment Inspector Bottom/Side Panel */
+    #inspector-panel {
+      position: absolute;
+      bottom: 75px;
+      right: 15px;
+      z-index: 850;
+      background: rgba(30, 41, 59, 0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 14px 18px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      width: 440px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      animation: slideUp 0.25s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .inspector-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    .inspector-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .close-btn:hover {
+      color: #fff;
+    }
+
+    .inspector-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      background: #0f172a;
+      padding: 8px 10px;
+      border-radius: 8px;
+    }
+
+    .inspector-stat {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .inspector-stat .val {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .inspector-stat .lbl {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 180px;
+    }
+
+    .chart-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .chart-tab-btn {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 3px 8px;
+      font-size: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .chart-tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* Modal dialogs */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
+      width: min(800px, 92vw);
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: zoomIn 0.2s ease;
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-header {
+      padding: 14px 20px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .kpi-card {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .kpi-card .val {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .kpi-card .lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 700px) {
+      .charts-row { grid-template-columns: 1fr; }
+    }
+
+    /* Video player container */
+    .video-container {
+      width: 100%;
+      background: #000;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    video {
+      width: 100%;
+      max-height: 460px;
+      outline: none;
+    }
+
+    /* Estate block tooltip */
+    .block-tooltip {
+      background: rgba(15, 23, 42, 0.95) !important;
+      border: 1px solid #475569 !important;
+      color: #fff !important;
+      border-radius: 6px !important;
+      padding: 4px 8px !important;
+      font-size: 11px !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    /* Block labels */
+    .block-label {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.85);
+      text-shadow: 0 0 3px #000, 0 0 5px #000;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="brand">
+      <span class="logo">ROSE</span>
+      <div>
+        <h1>PMSE Estate Road & Accelerometer Analytics</h1>
+        <div class="subtitle">Road Surface Condition • Roughness (IRI) • 3-Axis Telemetry</div>
+      </div>
+    </div>
+
+    <!-- Controls Row -->
+    <div class="controls-row">
+      <!-- Date Selector -->
+      <div class="btn-group">
+        <button class="btn-pill active" id="btn-date-20261103" onclick="setDate('20261103')">03 Nov</button>
+        <button class="btn-pill" id="btn-date-20261104" onclick="setDate('20261104')">04 Nov</button>
+        <button class="btn-pill" id="btn-date-20261105" onclick="setDate('20261105')">05 Nov</button>
+        <button class="btn-pill" id="btn-date-20261106" onclick="setDate('20261106')">06 Nov</button>
+        <button class="btn-pill" id="btn-date-all" onclick="setDate('all')">All (03–06 Nov)</button>
+      </div>
+
+      <!-- Header Time Filter -->
+      <div class="time-filter-group" title="Filter berdasarkan rentang waktu (jam)">
+        <span>🕒</span>
+        <input type="time" step="1" class="time-input" id="header-time-start" value="00:00:00" onchange="onTimeInputChange('header')">
+        <span>–</span>
+        <input type="time" step="1" class="time-input" id="header-time-end" value="23:59:59" onchange="onTimeInputChange('header')">
+        <button class="time-reset-btn" onclick="resetTimeFilter()" title="Reset Waktu">↺</button>
+      </div>
+
+      <!-- Metric Selector -->
+      <select class="select-custom" id="metric-select" onchange="setMetric(this.value)">
+        <option value="status">🚦 Color by Road Condition (Status)</option>
+        <option value="speed">🏎️ Color by Speed (km/h)</option>
+        <option value="iri">📉 Color by Roughness Index (IRI)</option>
+        <option value="vibration">⚡ Color by Z-Vibration (Bumps)</option>
+        <option value="date">📅 Color by Survey Date (03–06 Nov)</option>
+      </select>
+
+      <!-- Basemap Selector -->
+      <select class="select-custom" id="basemap-select" onchange="setBasemap(this.value)">
+        <option value="satellite">🛰️ Satellite Imagery (Esri)</option>
+        <option value="dark">🌑 Dark Canvas</option>
+        <option value="osm">🗺️ OpenStreetMap</option>
+      </select>
+
+      <!-- Action Buttons -->
+      <button class="action-btn" onclick="toggleBlocksLayer()">
+        <span id="blocks-toggle-icon">👁️</span> Blocks
+      </button>
+
+      <button class="action-btn" onclick="openAnalyticsModal()">
+        📊 Stats
+      </button>
+
+      <button class="action-btn" onclick="openVideoModal()">
+        🎥 Video
+      </button>
+
+      <button class="action-btn primary" onclick="fitPMSEBounds()">
+        🎯 Center PMSE
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Map & Floating Panels -->
+  <div id="main-container">
+    <div id="map"></div>
+
+    <!-- Floating Filters Panel -->
+    <div class="floating-panel" id="floating-filters">
+      <h3>
+        <span>Filters & Search</span>
+        <button class="close-btn" onclick="toggleFilterPanel()" style="font-size:14px;">✕</button>
+      </h3>
+
+      <!-- Block Search -->
+      <input type="text" class="search-box" id="block-search" placeholder="Search / filter block (e.g. E-17, B-16)..." oninput="handleBlockSearch(event)" onkeyup="handleBlockSearch(event)" />
+
+      <!-- Multi-Date Filter (Filter Tanggal) -->
+      <div class="filter-section" style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+          <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">📅 FILTER TANGGAL (MULTI-SELECT)</span>
+          <button class="time-reset-btn" onclick="setDate('all')" style="font-size:10px; color:#60a5fa;">Pilih Semua</button>
+        </div>
+        <div class="filter-chips" id="panel-date-chips">
+          <span class="chip active" data-date="20261103" onclick="toggleDateChip('20261103')">03 Nov (1,317)</span>
+          <span class="chip" data-date="20261104" onclick="toggleDateChip('20261104')">04 Nov (1,745)</span>
+          <span class="chip" data-date="20261105" onclick="toggleDateChip('20261105')">05 Nov (2,806)</span>
+          <span class="chip" data-date="20261106" onclick="toggleDateChip('20261106')">06 Nov (1,263)</span>
+        </div>
+      </div>
+
+      <!-- Time Range Filter (Filter Waktu) -->
+      <div class="filter-section" style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+          <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">🕒 FILTER WAKTU (JAM)</span>
+          <button class="time-reset-btn" onclick="resetTimeFilter()" style="font-size:10px; color:#60a5fa;">Reset Jam</button>
+        </div>
+
+        <div class="time-inputs-grid">
+          <div class="time-field">
+            <label for="panel-time-start">Dari Jam</label>
+            <input type="time" step="1" class="time-input" id="panel-time-start" value="00:00:00" onchange="onTimeInputChange('panel')">
+          </div>
+          <div class="time-field">
+            <label for="panel-time-end">Sampai Jam</label>
+            <input type="time" step="1" class="time-input" id="panel-time-end" value="23:59:59" onchange="onTimeInputChange('panel')">
+          </div>
+        </div>
+
+        <!-- Interactive Dual Range Time Slider -->
+        <div class="dual-slider-box">
+          <div class="dual-slider-track"></div>
+          <div class="dual-slider-fill" id="time-slider-fill"></div>
+          <input type="range" class="dual-range-input" id="time-slider-start" min="0" max="86399" value="0" step="1" oninput="onTimeSliderInput('start')">
+          <input type="range" class="dual-range-input" id="time-slider-end" min="0" max="86399" value="86399" step="1" oninput="onTimeSliderInput('end')">
+        </div>
+        <div class="time-bounds-info">
+          <span>Mulai: <strong id="lbl-min-time" style="color:#cbd5e1;">--:--:--</strong></span>
+          <span>Selesai: <strong id="lbl-max-time" style="color:#cbd5e1;">--:--:--</strong></span>
+        </div>
+
+        <!-- Quick Time Presets -->
+        <div class="filter-chips" id="time-preset-chips">
+          <span class="chip active" data-preset="all" onclick="applyTimePreset('all')">Semua Jam</span>
+          <span class="chip" data-preset="pagi" onclick="applyTimePreset('pagi')">Pagi (09-12)</span>
+          <span class="chip" data-preset="siang" onclick="applyTimePreset('siang')">Siang (12-15)</span>
+          <span class="chip" data-preset="sore" onclick="applyTimePreset('sore')">Sore (15-19)</span>
+        </div>
+      </div>
+
+      <!-- Division Filter -->
+      <div class="filter-section">
+        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-weight: 600;">DIVISION (DIVISI)</div>
+        <div class="filter-chips" id="division-chips">
+          <span class="chip active" data-div="all" onclick="filterDivision('all')">All</span>
+          <span class="chip" data-div="DIVISI 1" onclick="filterDivision('DIVISI 1')">Div 1</span>
+          <span class="chip" data-div="DIVISI 2" onclick="filterDivision('DIVISI 2')">Div 2</span>
+          <span class="chip" data-div="DIVISI 3" onclick="filterDivision('DIVISI 3')">Div 3</span>
+          <span class="chip" data-div="DIVISI 4" onclick="filterDivision('DIVISI 4')">Div 4</span>
+          <span class="chip" data-div="DIVISI 5" onclick="filterDivision('DIVISI 5')">Div 5</span>
+          <span class="chip" data-div="DIVISI 6" onclick="filterDivision('DIVISI 6')">Div 6</span>
+          <span class="chip" data-div="LUAR BLOK" onclick="filterDivision('LUAR BLOK')">Jalan Akses</span>
+        </div>
+      </div>
+
+      <!-- Road Condition Filter -->
+      <div class="filter-section">
+        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-weight: 600;">ROAD CONDITION</div>
+        <label class="condition-filter-item">
+          <input type="checkbox" id="chk-cond-normal" checked onchange="updateFilters()">
+          <span class="dot-badge dot-green"></span> Normal (0)
+        </label>
+        <label class="condition-filter-item">
+          <input type="checkbox" id="chk-cond-ringan" checked onchange="updateFilters()">
+          <span class="dot-badge dot-yellow"></span> Rusak Ringan (3)
+        </label>
+        <label class="condition-filter-item">
+          <input type="checkbox" id="chk-cond-sedang" checked onchange="updateFilters()">
+          <span class="dot-badge dot-orange"></span> Rusak Sedang (1)
+        </label>
+        <label class="condition-filter-item">
+          <input type="checkbox" id="chk-cond-berat" checked onchange="updateFilters()">
+          <span class="dot-badge dot-red"></span> Rusak Berat (2)
+        </label>
+      </div>
+
+      <!-- Quick Summary -->
+      <div style="border-top: 1px solid var(--border-color); padding-top: 8px; font-size: 11px; color: var(--text-muted); display: flex; flex-direction: column; gap: 3px;">
+        <div>Visible Segments: <span id="lbl-visible-segments" style="color:#fff; font-weight:700;">-</span></div>
+        <div>Filtered Distance: <span id="lbl-visible-distance" style="color:#60a5fa; font-weight:700;">-</span></div>
+        <div>Rentang Waktu: <span id="lbl-active-time-window" style="color:#cbd5e1; font-weight:600;">Semua</span></div>
+      </div>
+    </div>
+
+    <!-- Map Legend -->
+    <div class="map-legend" id="map-legend">
+      <h4 id="legend-title">Road Condition</h4>
+      <div id="legend-items">
+        <div class="legend-item"><span class="legend-line" style="background:#22c55e;"></span> Normal (Good)</div>
+        <div class="legend-item"><span class="legend-line" style="background:#eab308;"></span> Rusak Ringan</div>
+        <div class="legend-item"><span class="legend-line" style="background:#f97316;"></span> Rusak Sedang</div>
+        <div class="legend-item"><span class="legend-line" style="background:#ef4444;"></span> Rusak Berat (Severe)</div>
+      </div>
+    </div>
+
+    <!-- Playback / Route Simulation Bar -->
+    <div id="playback-bar">
+      <button class="play-btn" id="play-pause-btn" onclick="togglePlay()">▶</button>
+      <div class="scrub-container">
+        <div class="scrub-info">
+          <span>Time: <strong id="lbl-playback-time">--:--:--</strong></span>
+          <span>Segment: <strong id="lbl-playback-seg">0 / 0</strong></span>
+          <span id="lbl-playback-date">03 Nov 2026</span>
+        </div>
+        <input type="range" class="scrub-slider" id="playback-slider" min="0" max="1000" value="0" oninput="onScrub(this.value)">
+      </div>
+
+      <!-- HUD Telemetry metrics -->
+      <div class="hud-metrics">
+        <div class="hud-item">
+          <span class="val" id="hud-speed">0.0 <small style="font-size:9px; font-weight:normal;">km/h</small></span>
+          <span class="lbl">Speed</span>
+        </div>
+        <div class="hud-item">
+          <span class="val" id="hud-status" style="color:var(--success);">NORMAL</span>
+          <span class="lbl">Condition</span>
+        </div>
+        <div class="hud-item">
+          <span class="val" id="hud-iri">0.00</span>
+          <span class="lbl">IRI</span>
+        </div>
+        <div class="hud-item">
+          <span class="val" id="hud-z">9.81 <small style="font-size:9px; font-weight:normal;">m/s²</small></span>
+          <span class="lbl">Z-Shock</span>
+        </div>
+      </div>
+
+      <!-- Speed Multiplier -->
+      <select class="select-custom" style="padding:4px 8px; font-size:11px;" id="sim-speed-select" onchange="setSimSpeed(this.value)">
+        <option value="1">1x</option>
+        <option value="5" selected>5x</option>
+        <option value="15">15x</option>
+        <option value="30">30x</option>
+      </select>
+    </div>
+
+    <!-- Segment Telemetry Inspector Drawer -->
+    <div id="inspector-panel">
+      <div class="inspector-header">
+        <div class="inspector-title">
+          <span>🔍 Segment Telemetry</span>
+          <span id="insp-badge" class="dot-badge dot-green" style="width:8px; height:8px;"></span>
+          <span id="insp-status-text" style="font-size:11px; font-weight:600;">Normal</span>
+        </div>
+        <button class="close-btn" onclick="closeInspector()">✕</button>
+      </div>
+
+      <div style="font-size:10px; color:var(--text-muted); display:flex; justify-content:space-between;">
+        <span id="insp-file">Filename.txt</span>
+        <span id="insp-time">2026-11-03 13:35:29</span>
+      </div>
+      <div style="font-size:11px; color:#60a5fa; font-weight:600; display:flex; justify-content:space-between;">
+        <span id="insp-location">Blok - • DIVISI -</span>
+        <span id="insp-zpeak" style="color:#cbd5e1;">Peak Z: - m/s²</span>
+      </div>
+
+      <div class="inspector-stats-grid">
+        <div class="inspector-stat">
+          <span class="val" id="insp-dist">20.8 m</span>
+          <span class="lbl">Length</span>
+        </div>
+        <div class="inspector-stat">
+          <span class="val" id="insp-avg-spd">13.0 km/h</span>
+          <span class="lbl">Avg Speed</span>
+        </div>
+        <div class="inspector-stat">
+          <span class="val" id="insp-iri">0.21</span>
+          <span class="lbl">IRI Index</span>
+        </div>
+        <div class="inspector-stat">
+          <span class="val" id="insp-pts">249</span>
+          <span class="lbl">Samples</span>
+        </div>
+      </div>
+
+      <div class="chart-tabs">
+        <button class="chart-tab-btn active" id="tab-accel" onclick="setChartTab('accel')">3-Axis Accelerometer (X, Y, Z)</button>
+        <button class="chart-tab-btn" id="tab-speed" onclick="setChartTab('speed')">Speed Profile</button>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="inspector-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics & KPI Modal -->
+  <div class="modal-backdrop" id="analytics-modal" onclick="closeModalOnBackdrop(event, 'analytics-modal')">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 style="font-size:16px; font-weight:700;">PMSE Estate Survey Analytics</h2>
+        <button class="close-btn" onclick="closeAnalyticsModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="val" id="kpi-total-dist">71.3 km</span>
+            <span class="lbl">Total Distance</span>
+          </div>
+          <div class="kpi-card">
+            <span class="val" id="kpi-total-segs">3,062</span>
+            <span class="lbl">Road Segments</span>
+          </div>
+          <div class="kpi-card">
+            <span class="val" id="kpi-avg-speed">25.3 km/h</span>
+            <span class="lbl">Average Speed</span>
+          </div>
+          <div class="kpi-card">
+            <span class="val" id="kpi-avg-iri">2.97</span>
+            <span class="lbl">Average IRI</span>
+          </div>
+          <div class="kpi-card" style="border-color: rgba(239, 68, 68, 0.4);">
+            <span class="val" id="kpi-severe-cnt" style="color:var(--danger);">755</span>
+            <span class="lbl">Severe Damage Hotspots</span>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-row">
+          <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid var(--border-color);">
+            <h4 style="font-size:12px; margin-bottom:10px; color:var(--text-muted); text-transform:uppercase;">Road Condition Breakdown (Filtered)</h4>
+            <div style="height:200px; position:relative;">
+              <canvas id="condition-donut-chart"></canvas>
+            </div>
+          </div>
+          <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid var(--border-color);">
+            <h4 style="font-size:12px; margin-bottom:10px; color:var(--text-muted); text-transform:uppercase;">Speed Distribution (Filtered)</h4>
+            <div style="height:200px; position:relative;">
+              <canvas id="speed-hist-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily Survey Comparison (03–06 Nov 2026) -->
+        <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid var(--border-color);">
+          <h4 style="font-size:12px; margin-bottom:10px; color:var(--text-muted); text-transform:uppercase;">Daily Survey Comparison (03 – 06 Nov 2026)</h4>
+          <div style="height:190px; position:relative;">
+            <canvas id="daily-comparison-chart"></canvas>
+          </div>
+        </div>
+
+        <div style="font-size:12px; color:var(--text-muted);">
+          * Road damage classifications: Normal (IRI &lt; 2), Rusak Ringan (IRI 2-3), Rusak Sedang (IRI 3-4), Rusak Berat (IRI &gt; 4 or severe vertical shocks).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashcam Survey Video Modal -->
+  <div class="modal-backdrop" id="video-modal" onclick="closeModalOnBackdrop(event, 'video-modal')">
+    <div class="modal-content" style="width: min(900px, 95vw);">
+      <div class="modal-header">
+        <h2 style="font-size:16px; font-weight:700;">Survey Dashcam Video • 04 Nov 2026 (11:11 AM)</h2>
+        <button class="close-btn" onclick="closeVideoModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="video-container">
+          <video id="survey-video-player" controls preload="metadata">
+            <source src="/video/survey" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between;">
+          <span>File: 20261104_111115.mp4 (High Definition Field Road Camera)</span>
+          <span>Location: Kebun Sawit PMSE, Kalimantan Timur</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="static/leaflet.js"></script>
+  <script src="static/chart.umd.min.js"></script>
+  
+  <script>
+    // Global State
+    let map;
+    let basemapLayers = {};
+    let blocksGeoJsonLayer = null;
+    let roadSegmentsLayers = [];
+    let vehicleMarker = null;
+    let activeInspectorChart = null;
+    let activeChartTab = 'accel'; // 'accel' or 'speed'
+    let currentRawDetail = null;
+
+    let currentDate = '20261103';
+    let selectedDates = new Set(['20261103']);
+    let currentMetric = 'status';
+    let selectedDivision = 'all';
+    let blockFilterQuery = '';
+    let showBlocks = true;
+
+    const ALL_SURVEY_DATES = ['20261103', '20261104', '20261105', '20261106'];
+    const DATE_LABELS = {
+      '20261103': '03 Nov 2026',
+      '20261104': '04 Nov 2026',
+      '20261105': '05 Nov 2026',
+      '20261106': '06 Nov 2026',
+      'all': '03–06 Nov 2026'
+    };
+    const DATE_COLORS = {
+      '20261103': '#06b6d4', // Cyan
+      '20261104': '#22c55e', // Green
+      '20261105': '#a855f7', // Purple
+      '20261106': '#f59e0b'  // Amber
+    };
+
+    let allSegmentsData = {
+      '20261103': [],
+      '20261104': [],
+      '20261105': [],
+      '20261106': []
+    };
+    let pmseBlocksData = null;
+    let summaryStats = null;
+
+    // Simulation / Playback state
+    let isPlaying = false;
+    let simIndex = 0;
+    let simSpeed = 5;
+    let simTimer = null;
+    let currentDisplaySegments = [];
+
+    // Time Filter State (in seconds since 00:00:00)
+    let timeBounds = { minSec: 0, maxSec: 86399 };
+    let timeFilter = { startSec: 0, endSec: 86399 };
+    let activeTimePreset = 'all';
+
+    // Division Color Palette
+    const divisionColors = {
+      'DIVISI 1': '#06b6d4',
+      'DIVISI 2': '#10b981',
+      'DIVISI 3': '#8b5cf6',
+      'DIVISI 4': '#3b82f6',
+      'DIVISI 5': '#f97316',
+      'DIVISI 6': '#ec4899'
+    };
+
+    // Initialize Application
+    window.addEventListener('DOMContentLoaded', async () => {
+      initMap();
+      await loadInitialData();
+      renderBlocks();
+      initTimeBoundsForDate();
+      renderTracks();
+      updateStatsUI();
+    });
+
+    function initMap() {
+      // PMSE Center Coordinates ~ 1.015, 116.94 (preferCanvas for fast rendering of 7,000+ segments)
+      map = L.map('map', {
+        center: [1.005, 116.945],
+        zoom: 13,
+        zoomControl: false,
+        preferCanvas: true
+      });
+
+      L.control.zoom({ position: 'topright' }).addTo(map);
+
+      // Basemaps
+      basemapLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        maxZoom: 19
+      });
+
+      basemapLayers.dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 19
+      });
+
+      basemapLayers.osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19
+      });
+
+      basemapLayers.satellite.addTo(map);
+
+      // Vehicle marker for simulation
+      const carIcon = L.divIcon({
+        className: 'vehicle-marker',
+        html: '<div style="background:#3b82f6; width:16px; height:16px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 10px #3b82f6;"></div>',
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+      });
+      vehicleMarker = L.marker([1.015, 116.945], { icon: carIcon, zIndexOffset: 1000 }).addTo(map);
+      vehicleMarker.setOpacity(0);
+    }
+
+    function setBasemap(type) {
+      Object.values(basemapLayers).forEach(layer => map.removeLayer(layer));
+      if (basemapLayers[type]) {
+        basemapLayers[type].addTo(map);
+      }
+    }
+
+    async function loadInitialData() {
+      try {
+        const [blocksRes, s3Res, s4Res, s5Res, s6Res, statsRes] = await Promise.all([
+          fetch('data/pmse_blocks.json'),
+          fetch('data/data_20261103.json'),
+          fetch('data/data_20261104.json'),
+          fetch('data/data_20261105.json'),
+          fetch('data/data_20261106.json'),
+          fetch('data/summary_stats.json')
+        ]);
+
+        pmseBlocksData = await blocksRes.json();
+        allSegmentsData['20261103'] = await s3Res.json();
+        allSegmentsData['20261104'] = await s4Res.json();
+        allSegmentsData['20261105'] = await s5Res.json();
+        allSegmentsData['20261106'] = await s6Res.json();
+        summaryStats = await statsRes.json();
+        console.log("All 4 survey dates loaded successfully!");
+      } catch (err) {
+        console.error("Error loading data:", err);
+      }
+    }
+
+    function renderBlocks() {
+      if (!pmseBlocksData) return;
+      if (blocksGeoJsonLayer) {
+        map.removeLayer(blocksGeoJsonLayer);
+      }
+
+      blocksGeoJsonLayer = L.geoJSON(pmseBlocksData, {
+        style: (feature) => {
+          const div = feature.properties.divisi || 'DIVISI 1';
+          const baseColor = divisionColors[div] || '#3b82f6';
+          const isSelected = selectedDivision === 'all' || selectedDivision === div;
+
+          return {
+            fillColor: baseColor,
+            fillOpacity: isSelected ? 0.15 : 0.02,
+            color: baseColor,
+            weight: isSelected ? 1.5 : 0.5,
+            opacity: isSelected ? 0.8 : 0.2
+          };
+        },
+        onEachFeature: (feature, layer) => {
+          const p = feature.properties;
+          const tooltipContent = `
+            <div style="font-weight:700; color:#fff;">Blok ${p.blok}</div>
+            <div style="color:#94a3b8; font-size:10px;">${p.divisi} • ${p.estate}</div>
+          `;
+          layer.bindTooltip(tooltipContent, { className: 'block-tooltip', sticky: true });
+
+          // Zoom to block on click
+          layer.on('click', () => {
+            map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 16 });
+          });
+        }
+      });
+
+      if (showBlocks) {
+        blocksGeoJsonLayer.addTo(map);
+      }
+    }
+
+    function toggleBlocksLayer() {
+      showBlocks = !showBlocks;
+      document.getElementById('blocks-toggle-icon').textContent = showBlocks ? '👁️' : '🕶️';
+      if (blocksGeoJsonLayer) {
+        if (showBlocks) {
+          blocksGeoJsonLayer.addTo(map);
+        } else {
+          map.removeLayer(blocksGeoJsonLayer);
+        }
+      }
+    }
+
+    function syncDateSelectionUI() {
+      // Update header buttons
+      document.querySelectorAll('.btn-group .btn-pill').forEach(btn => btn.classList.remove('active'));
+      if (selectedDates.size === ALL_SURVEY_DATES.length) {
+        currentDate = 'all';
+        const allBtn = document.getElementById('btn-date-all');
+        if (allBtn) allBtn.classList.add('active');
+      } else if (selectedDates.size === 1) {
+        currentDate = Array.from(selectedDates)[0];
+        const activeBtn = document.getElementById(`btn-date-${currentDate}`);
+        if (activeBtn) activeBtn.classList.add('active');
+      } else {
+        currentDate = 'custom';
+      }
+
+      // Update panel date chips
+      document.querySelectorAll('#panel-date-chips .chip').forEach(ch => {
+        const dt = ch.getAttribute('data-date');
+        ch.classList.toggle('active', selectedDates.has(dt));
+      });
+
+      // Update playback date label
+      if (selectedDates.size === ALL_SURVEY_DATES.length) {
+        document.getElementById('lbl-playback-date').textContent = DATE_LABELS['all'];
+      } else if (selectedDates.size === 1) {
+        const onlyDate = Array.from(selectedDates)[0];
+        document.getElementById('lbl-playback-date').textContent = DATE_LABELS[onlyDate] || onlyDate;
+      } else {
+        const shortList = Array.from(selectedDates).sort().map(d => `${d.slice(6, 8)} Nov`).join(', ');
+        document.getElementById('lbl-playback-date').textContent = shortList;
+      }
+    }
+
+    function setDate(date) {
+      if (date === 'all') {
+        selectedDates = new Set(ALL_SURVEY_DATES);
+      } else {
+        selectedDates = new Set([date]);
+      }
+      syncDateSelectionUI();
+
+      // Reset playback
+      stopSimulation();
+      simIndex = 0;
+
+      // Recalculate available time bounds for the selected date(s)
+      initTimeBoundsForDate();
+
+      renderTracks();
+      updateStatsUI();
+    }
+
+    function toggleDateChip(date) {
+      if (selectedDates.has(date)) {
+        if (selectedDates.size > 1) {
+          selectedDates.delete(date);
+        }
+      } else {
+        selectedDates.add(date);
+      }
+      syncDateSelectionUI();
+
+      stopSimulation();
+      simIndex = 0;
+      initTimeBoundsForDate();
+      renderTracks();
+      updateStatsUI();
+    }
+
+    // Time Conversion Helpers
+    function timeStrToSeconds(hms) {
+      if (!hms) return 0;
+      const clean = hms.includes('T') ? hms.split('T')[1].split('.')[0] : hms.split('.')[0];
+      const parts = clean.split(':').map(Number);
+      const h = parts[0] || 0;
+      const m = parts[1] || 0;
+      const s = parts[2] || 0;
+      return Math.min(86399, Math.max(0, h * 3600 + m * 60 + s));
+    }
+
+    function secondsToTimeStr(sec) {
+      const clamped = Math.min(86399, Math.max(0, Math.round(sec)));
+      const h = String(Math.floor(clamped / 3600)).padStart(2, '0');
+      const m = String(Math.floor((clamped % 3600) / 60)).padStart(2, '0');
+      const s = String(clamped % 60).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
+
+    function getRawSegmentsForCurrentDate() {
+      const activeList = Array.from(selectedDates).sort();
+      let combined = [];
+      activeList.forEach(dt => {
+        if (allSegmentsData[dt]) {
+          combined = combined.concat(allSegmentsData[dt]);
+        }
+      });
+      return combined;
+    }
+
+    function initTimeBoundsForDate() {
+      const raw = getRawSegmentsForCurrentDate();
+      if (!raw || raw.length === 0) {
+        timeBounds = { minSec: 0, maxSec: 86399 };
+      } else {
+        let minS = 86399;
+        let maxS = 0;
+        raw.forEach(seg => {
+          const st = timeStrToSeconds(seg.start);
+          const en = seg.end ? timeStrToSeconds(seg.end) : st;
+          if (st < minS) minS = st;
+          if (en > maxS) maxS = en;
+        });
+        timeBounds = { minSec: minS, maxSec: maxS };
+      }
+
+      // Reset active filter to full bounds of selected date
+      timeFilter.startSec = timeBounds.minSec;
+      timeFilter.endSec = timeBounds.maxSec;
+      activeTimePreset = 'all';
+
+      const sliderStart = document.getElementById('time-slider-start');
+      const sliderEnd = document.getElementById('time-slider-end');
+      sliderStart.min = timeBounds.minSec;
+      sliderStart.max = timeBounds.maxSec;
+      sliderEnd.min = timeBounds.minSec;
+      sliderEnd.max = timeBounds.maxSec;
+
+      document.getElementById('lbl-min-time').textContent = secondsToTimeStr(timeBounds.minSec);
+      document.getElementById('lbl-max-time').textContent = secondsToTimeStr(timeBounds.maxSec);
+
+      syncTimeFilterUI();
+    }
+
+    function syncTimeFilterUI() {
+      const startStr = secondsToTimeStr(timeFilter.startSec);
+      const endStr = secondsToTimeStr(timeFilter.endSec);
+
+      document.getElementById('header-time-start').value = startStr;
+      document.getElementById('header-time-end').value = endStr;
+      document.getElementById('panel-time-start').value = startStr;
+      document.getElementById('panel-time-end').value = endStr;
+
+      const sliderStart = document.getElementById('time-slider-start');
+      const sliderEnd = document.getElementById('time-slider-end');
+      sliderStart.value = Math.min(timeBounds.maxSec, Math.max(timeBounds.minSec, timeFilter.startSec));
+      sliderEnd.value = Math.min(timeBounds.maxSec, Math.max(timeBounds.minSec, timeFilter.endSec));
+
+      // Update dual-slider highlight fill
+      const span = Math.max(1, timeBounds.maxSec - timeBounds.minSec);
+      const leftPct = Math.max(0, Math.min(100, ((timeFilter.startSec - timeBounds.minSec) / span) * 100));
+      const rightPct = Math.max(0, Math.min(100, ((timeFilter.endSec - timeBounds.minSec) / span) * 100));
+      const fillEl = document.getElementById('time-slider-fill');
+      fillEl.style.left = `${leftPct}%`;
+      fillEl.style.width = `${Math.max(0, rightPct - leftPct)}%`;
+
+      // Highlight preset chip
+      document.querySelectorAll('#time-preset-chips .chip').forEach(ch => {
+        ch.classList.toggle('active', ch.getAttribute('data-preset') === activeTimePreset);
+      });
+
+      const isFull = timeFilter.startSec <= timeBounds.minSec && timeFilter.endSec >= timeBounds.maxSec;
+      document.getElementById('lbl-active-time-window').textContent = isFull
+        ? `Semua (${startStr} – ${endStr})`
+        : `${startStr} – ${endStr}`;
+    }
+
+    function onTimeSliderInput(which) {
+      let sVal = parseInt(document.getElementById('time-slider-start').value, 10);
+      let eVal = parseInt(document.getElementById('time-slider-end').value, 10);
+
+      if (which === 'start' && sVal > eVal) {
+        sVal = eVal;
+      } else if (which === 'end' && eVal < sVal) {
+        eVal = sVal;
+      }
+
+      timeFilter.startSec = sVal;
+      timeFilter.endSec = eVal;
+      activeTimePreset = (sVal <= timeBounds.minSec && eVal >= timeBounds.maxSec) ? 'all' : 'custom';
+
+      stopSimulation();
+      simIndex = 0;
+      syncTimeFilterUI();
+      renderTracks();
+      updateStatsUI();
+    }
+
+    function onTimeInputChange(source) {
+      const startId = source === 'header' ? 'header-time-start' : 'panel-time-start';
+      const endId = source === 'header' ? 'header-time-end' : 'panel-time-end';
+
+      let sSec = timeStrToSeconds(document.getElementById(startId).value);
+      let eSec = timeStrToSeconds(document.getElementById(endId).value);
+
+      if (sSec > eSec) {
+        const tmp = sSec;
+        sSec = eSec;
+        eSec = tmp;
+      }
+
+      timeFilter.startSec = sSec;
+      timeFilter.endSec = eSec;
+      activeTimePreset = (sSec <= timeBounds.minSec && eSec >= timeBounds.maxSec) ? 'all' : 'custom';
+
+      stopSimulation();
+      simIndex = 0;
+      syncTimeFilterUI();
+      renderTracks();
+      updateStatsUI();
+    }
+
+    function applyTimePreset(preset) {
+      activeTimePreset = preset;
+      if (preset === 'all') {
+        timeFilter.startSec = timeBounds.minSec;
+        timeFilter.endSec = timeBounds.maxSec;
+      } else if (preset === 'pagi') {
+        timeFilter.startSec = timeStrToSeconds('09:00:00');
+        timeFilter.endSec = timeStrToSeconds('12:00:00');
+      } else if (preset === 'siang') {
+        timeFilter.startSec = timeStrToSeconds('12:00:00');
+        timeFilter.endSec = timeStrToSeconds('15:00:00');
+      } else if (preset === 'sore') {
+        timeFilter.startSec = timeStrToSeconds('15:00:00');
+        timeFilter.endSec = timeStrToSeconds('19:00:00');
+      }
+
+      stopSimulation();
+      simIndex = 0;
+      syncTimeFilterUI();
+      renderTracks();
+      updateStatsUI();
+    }
+
+    function resetTimeFilter() {
+      applyTimePreset('all');
+    }
+
+    function setMetric(metric) {
+      currentMetric = metric;
+      updateLegendUI();
+      renderTracks();
+    }
+
+    function updateLegendUI() {
+      const title = document.getElementById('legend-title');
+      const items = document.getElementById('legend-items');
+
+      if (currentMetric === 'status') {
+        title.textContent = 'Road Condition';
+        items.innerHTML = `
+          <div class="legend-item"><span class="legend-line" style="background:#22c55e;"></span> Normal (Good)</div>
+          <div class="legend-item"><span class="legend-line" style="background:#eab308;"></span> Rusak Ringan</div>
+          <div class="legend-item"><span class="legend-line" style="background:#f97316;"></span> Rusak Sedang</div>
+          <div class="legend-item"><span class="legend-line" style="background:#ef4444;"></span> Rusak Berat (Severe)</div>
+        `;
+      } else if (currentMetric === 'speed') {
+        title.textContent = 'Vehicle Speed (km/h)';
+        items.innerHTML = `
+          <div class="legend-item"><span class="legend-line" style="background:#3b82f6;"></span> &lt; 15 km/h (Slow)</div>
+          <div class="legend-item"><span class="legend-line" style="background:#22c55e;"></span> 15 - 25 km/h</div>
+          <div class="legend-item"><span class="legend-line" style="background:#eab308;"></span> 25 - 35 km/h</div>
+          <div class="legend-item"><span class="legend-line" style="background:#ef4444;"></span> &gt; 35 km/h (Fast)</div>
+        `;
+      } else if (currentMetric === 'iri') {
+        title.textContent = 'Roughness Index (IRI)';
+        items.innerHTML = `
+          <div class="legend-item"><span class="legend-line" style="background:#22c55e;"></span> &lt; 2.0 (Smooth)</div>
+          <div class="legend-item"><span class="legend-line" style="background:#eab308;"></span> 2.0 - 4.0 (Medium)</div>
+          <div class="legend-item"><span class="legend-line" style="background:#f97316;"></span> 4.0 - 8.0 (Rough)</div>
+          <div class="legend-item"><span class="legend-line" style="background:#ef4444;"></span> &gt; 8.0 (Very Rough)</div>
+        `;
+      } else if (currentMetric === 'vibration') {
+        title.textContent = 'Z-Vibration Shock';
+        items.innerHTML = `
+          <div class="legend-item"><span class="legend-line" style="background:#22c55e;"></span> &lt; 3.5 m/s² (Smooth)</div>
+          <div class="legend-item"><span class="legend-line" style="background:#eab308;"></span> 3.5 - 7.0 m/s² (Minor Bump)</div>
+          <div class="legend-item"><span class="legend-line" style="background:#ef4444;"></span> &gt; 7.0 m/s² (Severe Shock)</div>
+        `;
+      } else if (currentMetric === 'date') {
+        title.textContent = 'Survey Date';
+        items.innerHTML = `
+          <div class="legend-item"><span class="legend-line" style="background:#06b6d4;"></span> 03 Nov 2026 (30.5 km)</div>
+          <div class="legend-item"><span class="legend-line" style="background:#22c55e;"></span> 04 Nov 2026 (40.7 km)</div>
+          <div class="legend-item"><span class="legend-line" style="background:#a855f7;"></span> 05 Nov 2026 (65.5 km)</div>
+          <div class="legend-item"><span class="legend-line" style="background:#f59e0b;"></span> 06 Nov 2026 (29.3 km)</div>
+        `;
+      }
+    }
+
+    function getSegmentColor(seg) {
+      if (currentMetric === 'status') {
+        const c = seg.color;
+        if (c === 'GREEN') return '#22c55e';
+        if (c === 'YELLOW') return '#eab308';
+        if (c === 'ORANGE') return '#f97316';
+        if (c === 'RED') return '#ef4444';
+        return '#3b82f6';
+      } else if (currentMetric === 'speed') {
+        const spd = seg.avg_speed;
+        if (spd < 15) return '#3b82f6';
+        if (spd < 25) return '#22c55e';
+        if (spd < 35) return '#eab308';
+        return '#ef4444';
+      } else if (currentMetric === 'iri') {
+        const iri = seg.iri;
+        if (iri < 2.0) return '#22c55e';
+        if (iri < 4.0) return '#eab308';
+        if (iri < 8.0) return '#f97316';
+        return '#ef4444';
+      } else if (currentMetric === 'vibration') {
+        const z = seg.z_peak || 0;
+        if (z < 3.5) return '#22c55e';
+        if (z < 7.0) return '#eab308';
+        return '#ef4444';
+      } else if (currentMetric === 'date') {
+        return DATE_COLORS[seg.date] || '#3b82f6';
+      }
+      return '#3b82f6';
+    }
+
+    function filterDivision(div) {
+      selectedDivision = div;
+      document.querySelectorAll('#division-chips .chip').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-div') === div);
+      });
+
+      renderBlocks();
+      renderTracks();
+      updateStatsUI();
+    }
+
+    function updateFilters() {
+      renderTracks();
+      updateStatsUI();
+    }
+
+    function renderTracks() {
+      // Clear existing track layers
+      roadSegmentsLayers.forEach(l => map.removeLayer(l));
+      roadSegmentsLayers = [];
+
+      const rawSegments = getRawSegmentsForCurrentDate();
+
+      // Filter by condition checkboxes
+      const allowNormal = document.getElementById('chk-cond-normal').checked;
+      const allowRingan = document.getElementById('chk-cond-ringan').checked;
+      const allowSedang = document.getElementById('chk-cond-sedang').checked;
+      const allowBerat = document.getElementById('chk-cond-berat').checked;
+
+      currentDisplaySegments = rawSegments.filter(seg => {
+        const c = seg.color;
+        if (c === 'GREEN' && !allowNormal) return false;
+        if (c === 'YELLOW' && !allowRingan) return false;
+        if (c === 'ORANGE' && !allowSedang) return false;
+        if (c === 'RED' && !allowBerat) return false;
+
+        // Filter by Division
+        if (selectedDivision !== 'all' && seg.divisi !== selectedDivision) {
+          return false;
+        }
+
+        // Filter by Block search query if non-empty
+        if (blockFilterQuery) {
+          const b = (seg.blok || '').toLowerCase();
+          if (!b.includes(blockFilterQuery)) return false;
+        }
+
+        // Filter by Time Range (start/end timestamp overlap)
+        const segStartSec = timeStrToSeconds(seg.start);
+        const segEndSec = seg.end ? timeStrToSeconds(seg.end) : segStartSec;
+        if (segEndSec < timeFilter.startSec || segStartSec > timeFilter.endSec) {
+          return false;
+        }
+        return true;
+      });
+
+      const totalVisibleDistKm = (currentDisplaySegments.reduce((acc, s) => acc + (s.dist || 0), 0) / 1000).toFixed(2);
+      document.getElementById('lbl-visible-segments').textContent = `${currentDisplaySegments.length.toLocaleString()} / ${rawSegments.length.toLocaleString()}`;
+      document.getElementById('lbl-visible-distance').textContent = `${totalVisibleDistKm} km`;
+      document.getElementById('playback-slider').max = Math.max(1, currentDisplaySegments.length - 1);
+      document.getElementById('lbl-playback-seg').textContent = `0 / ${currentDisplaySegments.length}`;
+
+      // Batch render polylines
+      currentDisplaySegments.forEach((seg, idx) => {
+        if (!seg.coords || seg.coords.length < 2) return;
+
+        const color = getSegmentColor(seg);
+        const polyline = L.polyline(seg.coords, {
+          color: color,
+          weight: seg.color === 'RED' ? 4.5 : 3.5,
+          opacity: 0.9,
+          lineJoin: 'round'
+        });
+
+        polyline.on('mouseover', (e) => {
+          polyline.setStyle({ weight: 6, opacity: 1 });
+        });
+
+        polyline.on('mouseout', (e) => {
+          polyline.setStyle({ weight: seg.color === 'RED' ? 4.5 : 3.5, opacity: 0.9 });
+        });
+
+        polyline.on('click', () => {
+          openSegmentInspector(seg);
+        });
+
+        const timeLabel = seg.start ? seg.start.replace('T', ' ').split('.')[0] : '-';
+        const locLabel = seg.blok ? `Blok ${seg.blok} • ${seg.divisi}` : '';
+        polyline.bindTooltip(`
+          <div style="font-weight:700;">${seg.file}</div>
+          <div style="color:#94a3b8; font-size:10px;">🕒 ${timeLabel}</div>
+          ${locLabel ? `<div style="color:#60a5fa; font-size:10px; font-weight:600;">📍 ${locLabel}</div>` : ''}
+          <div>Condition: <strong style="color:${color}">${seg.status}</strong></div>
+          <div>Speed: ${seg.avg_speed} km/h • IRI: ${seg.iri} • Peak Z: ${seg.z_peak} m/s²</div>
+        `, { className: 'block-tooltip', sticky: true });
+
+        polyline.addTo(map);
+        roadSegmentsLayers.push(polyline);
+      });
+    }
+
+    async function openSegmentInspector(seg) {
+      const panel = document.getElementById('inspector-panel');
+      panel.style.display = 'flex';
+
+      document.getElementById('insp-file').textContent = seg.file;
+      document.getElementById('insp-time').textContent = seg.start ? seg.start.replace('T', ' ') : '-';
+      document.getElementById('insp-location').textContent = `📍 Blok ${seg.blok || '-'} • ${seg.divisi || '-'}`;
+      document.getElementById('insp-zpeak').textContent = `Peak Z: ${seg.z_peak || 0} m/s²`;
+      document.getElementById('insp-dist').textContent = `${seg.dist} m`;
+      document.getElementById('insp-avg-spd').textContent = `${seg.avg_speed} km/h`;
+      document.getElementById('insp-iri').textContent = seg.iri;
+      document.getElementById('insp-pts').textContent = seg.point_count || '-';
+
+      const badge = document.getElementById('insp-badge');
+      const stText = document.getElementById('insp-status-text');
+      badge.className = 'dot-badge';
+      if (seg.color === 'GREEN') { badge.classList.add('dot-green'); stText.textContent = 'Normal'; }
+      else if (seg.color === 'YELLOW') { badge.classList.add('dot-yellow'); stText.textContent = 'Rusak Ringan'; }
+      else if (seg.color === 'ORANGE') { badge.classList.add('dot-orange'); stText.textContent = 'Rusak Sedang'; }
+      else { badge.classList.add('dot-red'); stText.textContent = 'Rusak Berat'; }
+
+      // Fetch detailed raw 3-axis points from backend API using segment's own date
+      const segDate = seg.date || (currentDate === 'all' || currentDate === 'custom' ? '20261103' : currentDate);
+      try {
+        const res = await fetch(`/api/segment_detail?date=${segDate}&file=${seg.file}`);
+        if (res.ok) {
+          const detailData = await res.json();
+          currentRawDetail = detailData.detail || [];
+          renderInspectorChart();
+        } else {
+          // Fallback to sparkline
+          renderFallbackChart(seg);
+        }
+      } catch (err) {
+        renderFallbackChart(seg);
+      }
+    }
+
+    function closeInspector() {
+      document.getElementById('inspector-panel').style.display = 'none';
+    }
+
+    function setChartTab(tab) {
+      activeChartTab = tab;
+      document.getElementById('tab-accel').classList.toggle('active', tab === 'accel');
+      document.getElementById('tab-speed').classList.toggle('active', tab === 'speed');
+      renderInspectorChart();
+    }
+
+    function renderInspectorChart() {
+      const ctx = document.getElementById('inspector-chart').getContext('2d');
+      if (activeInspectorChart) {
+        activeInspectorChart.destroy();
+      }
+
+      if (!currentRawDetail || currentRawDetail.length === 0) return;
+
+      const labels = currentRawDetail.map((_, i) => i);
+
+      if (activeChartTab === 'accel') {
+        const xVals = currentRawDetail.map(p => p.x);
+        const yVals = currentRawDetail.map(p => p.y);
+        const zVals = currentRawDetail.map(p => p.z);
+
+        activeInspectorChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              { label: 'Z (Vertical Shock)', data: zVals, borderColor: '#ef4444', borderWidth: 1.5, pointRadius: 0 },
+              { label: 'Y (Longitudinal)', data: yVals, borderColor: '#3b82f6', borderWidth: 1.2, pointRadius: 0 },
+              { label: 'X (Lateral)', data: xVals, borderColor: '#22c55e', borderWidth: 1.2, pointRadius: 0 }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            scales: {
+              x: { display: false },
+              y: {
+                grid: { color: '#334155' },
+                ticks: { color: '#94a3b8', font: { size: 9 } }
+              }
+            },
+            plugins: {
+              legend: {
+                labels: { color: '#f8fafc', font: { size: 10 }, boxWidth: 10 }
+              }
+            }
+          }
+        });
+      } else {
+        const speedVals = currentRawDetail.map(p => p.speed);
+        activeInspectorChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              { label: 'Speed (km/h)', data: speedVals, borderColor: '#60a5fa', backgroundColor: 'rgba(96, 165, 250, 0.15)', fill: true, borderWidth: 2, pointRadius: 0 }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            scales: {
+              x: { display: false },
+              y: {
+                grid: { color: '#334155' },
+                ticks: { color: '#94a3b8', font: { size: 9 } }
+              }
+            },
+            plugins: {
+              legend: {
+                labels: { color: '#f8fafc', font: { size: 10 }, boxWidth: 10 }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    function renderFallbackChart(seg) {
+      const ctx = document.getElementById('inspector-chart').getContext('2d');
+      if (activeInspectorChart) activeInspectorChart.destroy();
+
+      const spark = seg.spark_z || [9.8, 9.8];
+      activeInspectorChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: spark.map((_, i) => i),
+          datasets: [{ label: 'Z Vibration', data: spark, borderColor: '#ef4444', borderWidth: 1.5, pointRadius: 0 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { x: { display: false }, y: { ticks: { color: '#94a3b8' } } },
+          plugins: { legend: { labels: { color: '#f8fafc' } } }
+        }
+      });
+    }
+
+    // Playback / Route Simulation
+    function togglePlay() {
+      if (isPlaying) {
+        stopSimulation();
+      } else {
+        startSimulation();
+      }
+    }
+
+    function startSimulation() {
+      if (currentDisplaySegments.length === 0) return;
+      isPlaying = true;
+      document.getElementById('play-pause-btn').textContent = '⏸';
+      vehicleMarker.setOpacity(1);
+
+      simTimer = setInterval(() => {
+        if (simIndex >= currentDisplaySegments.length - 1) {
+          stopSimulation();
+          return;
+        }
+        simIndex++;
+        updateSimulationStep();
+      }, 1000 / simSpeed);
+    }
+
+    function stopSimulation() {
+      isPlaying = false;
+      document.getElementById('play-pause-btn').textContent = '▶';
+      if (simTimer) clearInterval(simTimer);
+    }
+
+    function onScrub(val) {
+      simIndex = parseInt(val);
+      updateSimulationStep();
+    }
+
+    function setSimSpeed(val) {
+      simSpeed = parseInt(val);
+      if (isPlaying) {
+        stopSimulation();
+        startSimulation();
+      }
+    }
+
+    function updateSimulationStep() {
+      if (!currentDisplaySegments[simIndex]) return;
+      const seg = currentDisplaySegments[simIndex];
+
+      document.getElementById('playback-slider').value = simIndex;
+      document.getElementById('lbl-playback-seg').textContent = `${simIndex + 1} / ${currentDisplaySegments.length}`;
+      document.getElementById('lbl-playback-time').textContent = seg.start ? seg.start.split('T')[1].split('.')[0] : '--:--:--';
+
+      // Update HUD
+      document.getElementById('hud-speed').innerHTML = `${seg.avg_speed} <small style="font-size:9px; font-weight:normal;">km/h</small>`;
+      const stEl = document.getElementById('hud-status');
+      stEl.textContent = seg.status.split(' (')[0];
+      stEl.style.color = seg.color === 'GREEN' ? 'var(--success)' : (seg.color === 'RED' ? 'var(--danger)' : 'var(--warning)');
+      document.getElementById('hud-iri').textContent = seg.iri.toFixed(2);
+      document.getElementById('hud-z').innerHTML = `${(seg.z_peak || 0).toFixed(2)} <small style="font-size:9px; font-weight:normal;">m/s²</small>`;
+
+      // Move vehicle marker
+      if (seg.coords && seg.coords.length > 0) {
+        const pt = seg.coords[0];
+        vehicleMarker.setLatLng(pt);
+        vehicleMarker.setOpacity(1);
+      }
+    }
+
+    function handleBlockSearch(e) {
+      const query = e.target.value.trim().toLowerCase();
+      blockFilterQuery = query;
+      renderTracks();
+      updateStatsUI();
+
+      if (e.key === 'Enter' && query && pmseBlocksData) {
+        const found = pmseBlocksData.features.find(f => {
+          const b = (f.properties.blok || '').toLowerCase();
+          return b === query || b.includes(query);
+        });
+
+        if (found) {
+          const bboxLayer = L.geoJSON(found);
+          map.fitBounds(bboxLayer.getBounds(), { padding: [80, 80], maxZoom: 16 });
+        }
+      }
+    }
+
+    function fitPMSEBounds() {
+      if (blocksGeoJsonLayer) {
+        map.fitBounds(blocksGeoJsonLayer.getBounds(), { padding: [40, 40] });
+      } else {
+        map.setView([1.005, 116.945], 13);
+      }
+    }
+
+    function toggleFilterPanel() {
+      const panel = document.getElementById('floating-filters');
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Modals
+    function openAnalyticsModal() {
+      document.getElementById('analytics-modal').style.display = 'flex';
+      renderAnalyticsCharts();
+    }
+
+    function closeAnalyticsModal() {
+      document.getElementById('analytics-modal').style.display = 'none';
+    }
+
+    function openVideoModal() {
+      document.getElementById('video-modal').style.display = 'flex';
+      const v = document.getElementById('survey-video-player');
+      v.play().catch(() => {});
+    }
+
+    function closeVideoModal() {
+      document.getElementById('video-modal').style.display = 'none';
+      const v = document.getElementById('survey-video-player');
+      v.pause();
+    }
+
+    function closeModalOnBackdrop(e, id) {
+      if (e.target.id === id) {
+        document.getElementById(id).style.display = 'none';
+        if (id === 'video-modal') {
+          document.getElementById('survey-video-player').pause();
+        }
+      }
+    }
+
+    function computeFilteredStats() {
+      const segs = currentDisplaySegments || [];
+      if (segs.length === 0) {
+        return {
+          total_distance_km: 0,
+          total_segments: 0,
+          avg_speed: 0,
+          avg_iri: 0,
+          severe_damage_count: 0,
+          color_counts: { GREEN: 0, YELLOW: 0, ORANGE: 0, RED: 0 }
+        };
+      }
+      const totalDistKm = segs.reduce((sum, s) => sum + (s.dist || 0), 0) / 1000.0;
+      const validSpds = segs.filter(s => s.avg_speed > 0).map(s => s.avg_speed);
+      const validIris = segs.filter(s => s.iri > 0).map(s => s.iri);
+      const avgSpeed = validSpds.length ? validSpds.reduce((a, b) => a + b, 0) / validSpds.length : 0;
+      const avgIri = validIris.length ? validIris.reduce((a, b) => a + b, 0) / validIris.length : 0;
+
+      const colorCounts = { GREEN: 0, YELLOW: 0, ORANGE: 0, RED: 0 };
+      let severeCount = 0;
+      segs.forEach(s => {
+        if (colorCounts[s.color] !== undefined) colorCounts[s.color]++;
+        if (s.color === 'RED' || (s.status && s.status.includes('Rusak Berat'))) severeCount++;
+      });
+
+      return {
+        total_distance_km: totalDistKm.toFixed(2),
+        total_segments: segs.length,
+        avg_speed: avgSpeed.toFixed(1),
+        avg_iri: avgIri,
+        severe_damage_count: severeCount,
+        color_counts: colorCounts
+      };
+    }
+
+    function updateStatsUI() {
+      const s = computeFilteredStats();
+      document.getElementById('kpi-total-dist').textContent = `${s.total_distance_km} km`;
+      document.getElementById('kpi-total-segs').textContent = s.total_segments.toLocaleString();
+      document.getElementById('kpi-avg-speed').textContent = `${s.avg_speed} km/h`;
+      document.getElementById('kpi-avg-iri').textContent = Number(s.avg_iri).toFixed(2);
+      document.getElementById('kpi-severe-cnt').textContent = s.severe_damage_count.toLocaleString();
+
+      if (document.getElementById('analytics-modal').style.display === 'flex') {
+        renderAnalyticsCharts();
+      }
+    }
+
+    let donutChartInstance = null;
+    let speedChartInstance = null;
+    let dailyChartInstance = null;
+
+    function renderAnalyticsCharts() {
+      const s = computeFilteredStats();
+
+      // Donut Chart
+      const donutCtx = document.getElementById('condition-donut-chart').getContext('2d');
+      if (donutChartInstance) donutChartInstance.destroy();
+
+      const colors = s.color_counts || {};
+      donutChartInstance = new Chart(donutCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Normal', 'Rusak Ringan', 'Rusak Sedang', 'Rusak Berat'],
+          datasets: [{
+            data: [
+              colors['GREEN'] || 0,
+              colors['YELLOW'] || 0,
+              colors['ORANGE'] || 0,
+              colors['RED'] || 0
+            ],
+            backgroundColor: ['#22c55e', '#eab308', '#f97316', '#ef4444'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#f8fafc', font: { size: 11 }, boxWidth: 12 }
+            }
+          }
+        }
+      });
+
+      // Speed Histogram
+      const histCtx = document.getElementById('speed-hist-chart').getContext('2d');
+      if (speedChartInstance) speedChartInstance.destroy();
+
+      speedChartInstance = new Chart(histCtx, {
+        type: 'bar',
+        data: {
+          labels: ['0-10', '10-20', '20-30', '30-40', '>40 km/h'],
+          datasets: [{
+            label: 'Segments Count',
+            data: [
+              currentDisplaySegments.filter(x => x.avg_speed < 10).length,
+              currentDisplaySegments.filter(x => x.avg_speed >= 10 && x.avg_speed < 20).length,
+              currentDisplaySegments.filter(x => x.avg_speed >= 20 && x.avg_speed < 30).length,
+              currentDisplaySegments.filter(x => x.avg_speed >= 30 && x.avg_speed < 40).length,
+              currentDisplaySegments.filter(x => x.avg_speed >= 40).length
+            ],
+            backgroundColor: '#3b82f6',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+            y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+
+      // Daily Comparison Stacked Bar Chart (03–06 Nov 2026)
+      const dailyCtx = document.getElementById('daily-comparison-chart').getContext('2d');
+      if (dailyChartInstance) dailyChartInstance.destroy();
+
+      const dayLabels = ['03 Nov (30.5 km)', '04 Nov (40.7 km)', '05 Nov (65.5 km)', '06 Nov (29.3 km)'];
+      const countByDayAndColor = (dt, col) => (allSegmentsData[dt] || []).filter(seg => seg.color === col).length;
+
+      dailyChartInstance = new Chart(dailyCtx, {
+        type: 'bar',
+        data: {
+          labels: dayLabels,
+          datasets: [
+            { label: 'Normal', data: ALL_SURVEY_DATES.map(d => countByDayAndColor(d, 'GREEN')), backgroundColor: '#22c55e' },
+            { label: 'Rusak Ringan', data: ALL_SURVEY_DATES.map(d => countByDayAndColor(d, 'YELLOW')), backgroundColor: '#eab308' },
+            { label: 'Rusak Sedang', data: ALL_SURVEY_DATES.map(d => countByDayAndColor(d, 'ORANGE')), backgroundColor: '#f97316' },
+            { label: 'Rusak Berat', data: ALL_SURVEY_DATES.map(d => countByDayAndColor(d, 'RED')), backgroundColor: '#ef4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { stacked: true, grid: { display: false }, ticks: { color: '#f8fafc', font: { size: 10 } } },
+            y: { stacked: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { color: '#f8fafc', font: { size: 10 }, boxWidth: 10 }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+

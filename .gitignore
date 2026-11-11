@@ -1,0 +1,38 @@
+# Byte-compiled / Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Large Media Files (>100MB violates GitHub file size limits)
+ROSE/Video/
+Video/
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Raw Archive / Compressed Files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Raw Sensor Dumps & Large CSVs (>90MB)
+# (The web app uses pre-processed JSON in web/data/ for high performance)
+ROSE/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# IDE & Editor Configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment & Logs
+.env
+*.log
