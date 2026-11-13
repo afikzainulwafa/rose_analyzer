@@ -556,10 +556,10 @@
 
     /* Segment Inspector Bottom/Side Panel */
     #inspector-panel {
-      position: absolute;
+      position: fixed;
       bottom: 75px;
       right: 15px;
-      z-index: 850;
+      z-index: 2200;
       background: rgba(30, 41, 59, 0.95);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.15);
@@ -785,6 +785,502 @@
       text-shadow: 0 0 3px #000, 0 0 5px #000;
       pointer-events: none;
     }
+
+    /* Full-Screen Split-View Road Corridor Overlay */
+    #road-corridor-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1500;
+      background: rgba(15, 23, 42, 0.98);
+      backdrop-filter: blur(12px);
+      display: none;
+      flex-direction: column;
+      animation: zoomIn 0.2s ease;
+    }
+
+    .rc-header {
+      padding: 12px 20px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .rc-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .rc-type-badge {
+      background: rgba(245, 158, 11, 0.18);
+      border: 1px solid #f59e0b;
+      color: #fbbf24;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.3px;
+    }
+
+    .rc-meta-pills {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .rc-meta-pill {
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      padding: 3px 9px;
+      border-radius: 6px;
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+
+    .rc-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .rc-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      overflow: hidden;
+    }
+
+    @media (max-width: 980px) {
+      .rc-body {
+        grid-template-columns: 1fr;
+        grid-template-rows: 280px 1fr;
+      }
+    }
+
+    .rc-left-pane {
+      background: #0f172a;
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #road-mini-map {
+      flex: 1;
+      width: 100%;
+      min-height: 220px;
+      background: #090d16;
+    }
+
+    .rc-summary-box {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border-color);
+      background: #1e293b;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .rc-stat-item {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 7px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .rc-stat-item .val {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .rc-stat-item .lbl {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .rc-right-pane {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #0f172a;
+    }
+
+    /* Side-by-Side Synchronized Pass Maps Grid */
+    .rc-maps-grid {
+      flex: 1;
+      display: grid;
+      gap: 10px;
+      padding: 12px 16px;
+      overflow-y: auto;
+      background: #0b1120;
+    }
+
+    .pass-map-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 210px;
+      transition: border-color 0.15s ease;
+    }
+
+    .pass-map-card:hover {
+      border-color: #60a5fa;
+    }
+
+    .pass-map-card-hdr {
+      padding: 7px 10px;
+      background: #0f172a;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      font-size: 10px;
+    }
+
+    .pass-map-canvas {
+      flex: 1;
+      width: 100%;
+      min-height: 160px;
+      background: #090d16;
+    }
+
+    /* Sticky Distance Ruler & Consensus Header */
+    .rc-ruler-header {
+      padding: 12px 20px 10px 20px;
+      background: rgba(30, 41, 59, 0.96);
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .rc-axis-endpoints {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #93c5fd;
+      margin-bottom: 6px;
+    }
+
+    .rc-ruler-ticks {
+      position: relative;
+      height: 18px;
+      border-bottom: 1px solid #475569;
+      margin-bottom: 8px;
+    }
+
+    .rc-tick {
+      position: absolute;
+      bottom: 0;
+      transform: translateX(-50%);
+      font-size: 9px;
+      color: #94a3b8;
+      padding-bottom: 3px;
+    }
+
+    .rc-tick::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      height: 4px;
+      background: #64748b;
+    }
+
+    /* Pass Cards Scroll Container */
+    .rc-cards-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 20px 30px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+    }
+
+    .pass-card {
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 11px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .pass-card:hover {
+      border-color: #60a5fa;
+      box-shadow: 0 4px 18px rgba(59, 130, 246, 0.18);
+    }
+
+    .pass-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pass-card-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pass-date-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 5px;
+      color: #fff;
+    }
+
+    .pass-time-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: #e2e8f0;
+      background: #0f172a;
+      padding: 2px 8px;
+      border-radius: 5px;
+      border: 1px solid #334155;
+    }
+
+    .pass-dir-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pass-dir-forward {
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      color: #34d399;
+    }
+
+    .pass-dir-reverse {
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      color: #fbbf24;
+    }
+
+    .pass-card-metrics {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      color: #cbd5e1;
+      flex-wrap: wrap;
+    }
+
+    /* Aligned Linear Strip Bar (0 m -> L m) */
+    .linear-strip-track {
+      position: relative;
+      width: 100%;
+      height: 26px;
+      background: #090d16;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+
+    .linear-strip-seg {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      min-width: 2px;
+      transition: filter 0.1s ease;
+      cursor: pointer;
+    }
+
+    .linear-strip-seg:hover {
+      filter: brightness(1.3);
+      z-index: 5;
+      outline: 1.5px solid #fff;
+    }
+
+    .strip-dir-watermark {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      font-size: 9px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.35);
+      pointer-events: none;
+      z-index: 3;
+      letter-spacing: 4px;
+    }
+
+    .strip-cursor-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 1.5px;
+      background: #ffffff;
+      box-shadow: 0 0 6px #60a5fa;
+      pointer-events: none;
+      z-index: 8;
+      display: none;
+    }
+
+    /* Interactive Map Line / Polygon Drawing Tool Panel */
+    #draw-tool-panel {
+      position: absolute;
+      top: 15px;
+      right: 55px;
+      z-index: 1050;
+      width: 340px;
+      max-height: calc(100vh - 165px);
+      overflow-y: auto;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(12px);
+      border: 1px solid #3b82f6;
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .draw-mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .draw-mode-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      padding: 7px 8px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .draw-mode-btn.active {
+      background: rgba(59, 130, 246, 0.22);
+      border-color: #60a5fa;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.25);
+    }
+
+    .draw-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .draw-field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .draw-field label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+
+    .draw-input {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #fff;
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      outline: none;
+    }
+
+    .draw-input:focus {
+      border-color: #60a5fa;
+    }
+
+    .draw-metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 7px 9px;
+      text-align: center;
+    }
+
+    .draw-metrics-bar .val {
+      font-size: 12px;
+      font-weight: 800;
+      color: #fbbf24;
+      display: block;
+    }
+
+    .draw-metrics-bar .lbl {
+      font-size: 9px;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+
+    .custom-road-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 155px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .custom-road-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-size: 11px;
+      gap: 6px;
+    }
+
+    .custom-road-item:hover {
+      border-color: #60a5fa;
+    }
   </style>
 </head>
 <body>
@@ -794,8 +1290,8 @@
     <div class="brand">
       <span class="logo">ROSE</span>
       <div>
-        <h1>PMSE Estate Road & Accelerometer Analytics</h1>
-        <div class="subtitle">Road Surface Condition • Roughness (IRI) • 3-Axis Telemetry</div>
+        <h1>PMSE & JLYE Road & Accelerometer Analytics</h1>
+        <div class="subtitle">PMSE • JLYE • Jalan Raya • Multi-Pass Corridor & Custom Polygon Analyzer</div>
       </div>
     </div>
 
@@ -840,6 +1336,18 @@
         <span id="blocks-toggle-icon">👁️</span> Blocks
       </button>
 
+      <button class="action-btn" onclick="toggleRoadsLayer()">
+        <span id="roads-toggle-icon">🛣️</span> Roads
+      </button>
+
+      <button class="action-btn" onclick="openDefaultRoadCorridorModal()" title="Buka Komparasi Lintasan per Ruas Jalan">
+        🔍 Ruas Jalan
+      </button>
+
+      <button class="action-btn" id="btn-draw-tool" onclick="toggleDrawTool()" title="Gambar Line / Polygon Jalan Baru di Peta untuk Dianalisa">
+        ✏️ Buat Jalan
+      </button>
+
       <button class="action-btn" onclick="openAnalyticsModal()">
         📊 Stats
       </button>
@@ -849,7 +1357,7 @@
       </button>
 
       <button class="action-btn primary" onclick="fitPMSEBounds()">
-        🎯 Center PMSE
+        🎯 Center Map
       </button>
     </div>
   </header>
@@ -875,7 +1383,7 @@
           <button class="time-reset-btn" onclick="setDate('all')" style="font-size:10px; color:#60a5fa;">Pilih Semua</button>
         </div>
         <div class="filter-chips" id="panel-date-chips">
-          <span class="chip active" data-date="20261103" onclick="toggleDateChip('20261103')">03 Nov (1,317)</span>
+          <span class="chip active" data-date="20261103" onclick="toggleDateChip('20261103')">03 Nov (1,319)</span>
           <span class="chip" data-date="20261104" onclick="toggleDateChip('20261104')">04 Nov (1,745)</span>
           <span class="chip" data-date="20261105" onclick="toggleDateChip('20261105')">05 Nov (2,806)</span>
           <span class="chip" data-date="20261106" onclick="toggleDateChip('20261106')">06 Nov (1,263)</span>
@@ -921,6 +1429,17 @@
         </div>
       </div>
 
+      <!-- Estate Filter -->
+      <div class="filter-section">
+        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-weight: 600;">ESTATE / WILAYAH</div>
+        <div class="filter-chips" id="estate-chips">
+          <span class="chip active" data-estate="all" onclick="filterEstate('all')">All</span>
+          <span class="chip" data-estate="PMSE" onclick="filterEstate('PMSE')">PMSE</span>
+          <span class="chip" data-estate="JLYE" onclick="filterEstate('JLYE')">JLYE</span>
+          <span class="chip" data-estate="LUAR KEBUN" onclick="filterEstate('LUAR KEBUN')">Jalan Raya</span>
+        </div>
+      </div>
+
       <!-- Division Filter -->
       <div class="filter-section">
         <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-weight: 600;">DIVISION (DIVISI)</div>
@@ -932,7 +1451,7 @@
           <span class="chip" data-div="DIVISI 4" onclick="filterDivision('DIVISI 4')">Div 4</span>
           <span class="chip" data-div="DIVISI 5" onclick="filterDivision('DIVISI 5')">Div 5</span>
           <span class="chip" data-div="DIVISI 6" onclick="filterDivision('DIVISI 6')">Div 6</span>
-          <span class="chip" data-div="LUAR BLOK" onclick="filterDivision('LUAR BLOK')">Jalan Akses</span>
+          <span class="chip" data-div="LUAR BLOK" onclick="filterDivision('LUAR BLOK')">Jalan Akses / Raya</span>
         </div>
       </div>
 
@@ -962,6 +1481,106 @@
         <div>Visible Segments: <span id="lbl-visible-segments" style="color:#fff; font-weight:700;">-</span></div>
         <div>Filtered Distance: <span id="lbl-visible-distance" style="color:#60a5fa; font-weight:700;">-</span></div>
         <div>Rentang Waktu: <span id="lbl-active-time-window" style="color:#cbd5e1; font-weight:600;">Semua</span></div>
+      </div>
+    </div>
+
+    <!-- Interactive Map Line / Polygon Drawing Tool Panel -->
+    <div id="draw-tool-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:8px;">
+        <div style="font-size:13px; font-weight:800; color:#fff; display:flex; align-items:center; gap:6px;">
+          <span>✏️ Buat Line / Polygon Jalan</span>
+        </div>
+        <button class="close-btn" onclick="toggleDrawTool()" style="font-size:15px;">✕</button>
+      </div>
+
+      <div style="font-size:11px; color:#93c5fd; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.35); border-radius:7px; padding:6px 9px;" id="draw-hint-box">
+        👆 <strong>Klik titik-titik di peta</strong> mengikuti alur jalan. Garis akan otomatis membentuk <strong>Polygon Koridor Jalan</strong> sesuai lebar meter.
+      </div>
+
+      <!-- Mode Selector -->
+      <div class="draw-mode-tabs">
+        <button class="draw-mode-btn active" id="btn-mode-line" onclick="setDrawMode('line')">🛣️ Garis (Auto-Polygon)</button>
+        <button class="draw-mode-btn" id="btn-mode-poly" onclick="setDrawMode('polygon')">📐 Polygon Manual</button>
+      </div>
+
+      <!-- Form Inputs -->
+      <div class="draw-field">
+        <label for="draw-name-input">Nama Ruas Jalan / Blok</label>
+        <input type="text" class="draw-input" id="draw-name-input" placeholder="Contoh: Jalan Raya KM 2 / Poros Selatan" value="Jalan Raya Custom 1">
+      </div>
+
+      <div class="draw-form-grid">
+        <div class="draw-field">
+          <label for="draw-type-select">Kategori Jalan</label>
+          <select class="draw-input" id="draw-type-select" onchange="onDrawTypeChange()">
+            <option value="Jalan Raya">🛣️ Jalan Raya (12 m)</option>
+            <option value="Jalan MR">🟧 Jalan MR (9 m)</option>
+            <option value="Jalan CR">🟨 Jalan CR (7 m)</option>
+            <option value="Jalan Kontur">🟦 Jalan Kontur (7 m)</option>
+          </select>
+        </div>
+        <div class="draw-field">
+          <label for="draw-estate-select">Wilayah / Estate</label>
+          <select class="draw-input" id="draw-estate-select">
+            <option value="LUAR KEBUN">LUAR KEBUN (Jalan Raya)</option>
+            <option value="PMSE">PMSE</option>
+            <option value="JLYE">JLYE</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="draw-form-grid">
+        <div class="draw-field">
+          <label for="draw-div-select">Divisi</label>
+          <select class="draw-input" id="draw-div-select">
+            <option value="LUAR BLOK">LUAR BLOK</option>
+            <option value="DIVISI 1">DIVISI 1</option>
+            <option value="DIVISI 2">DIVISI 2</option>
+            <option value="DIVISI 3">DIVISI 3</option>
+            <option value="DIVISI 4">DIVISI 4</option>
+            <option value="DIVISI 5">DIVISI 5</option>
+            <option value="DIVISI 6">DIVISI 6</option>
+          </select>
+        </div>
+        <div class="draw-field">
+          <label for="draw-width-input">Lebar Koridor (Meter)</label>
+          <input type="number" class="draw-input" id="draw-width-input" min="3" max="40" step="1" value="12" oninput="updateDrawPreview()">
+        </div>
+      </div>
+
+      <!-- Live Metrics Preview -->
+      <div class="draw-metrics-bar">
+        <div>
+          <span class="val" id="draw-stat-pts">0</span>
+          <span class="lbl">Titik</span>
+        </div>
+        <div>
+          <span class="val" id="draw-stat-len">0 m</span>
+          <span class="lbl">Panjang</span>
+        </div>
+        <div>
+          <span class="val" id="draw-stat-segs" style="color:#4ade80;">0 Segmen</span>
+          <span class="lbl">Data Masuk</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <button class="action-btn" style="justify-content:center;" onclick="undoDrawPoint()">↩️ Undo Titik</button>
+        <button class="action-btn" style="justify-content:center;" onclick="clearDrawPoints()">🗑️ Reset Titik</button>
+      </div>
+
+      <button class="action-btn primary" style="justify-content:center; padding:8px 12px; font-weight:800; background:#10b981; border-color:#059669;" onclick="saveAndAnalyzeCustomRoad()">
+        💾 Simpan & Analisa Ruas Ini
+      </button>
+
+      <!-- Saved Jalan Raya & Custom Roads List -->
+      <div style="border-top:1px solid #334155; padding-top:8px; display:flex; flex-direction:column; gap:6px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:10px; font-weight:700; color:#94a3b8; text-transform:uppercase;">🛣️ Ruas Jalan Raya & Custom</span>
+          <button class="time-reset-btn" style="font-size:10px; color:#60a5fa;" onclick="exportCustomRoadsGeoJSON()">📥 Export GeoJSON</button>
+        </div>
+        <div class="custom-road-list" id="custom-roads-list"></div>
       </div>
     </div>
 
@@ -1152,6 +1771,105 @@
     </div>
   </div>
 
+  <!-- Full-Screen Split-View Road Corridor Overlay -->
+  <div id="road-corridor-overlay">
+    <div class="rc-header">
+      <div class="rc-title-group">
+        <span class="rc-type-badge" id="rc-badge-type">🛣️ Jalan CR</span>
+        <h2 style="font-size:16px; font-weight:800; color:#fff;" id="rc-title-blok">Blok C-14 – C-15</h2>
+        <div class="rc-meta-pills">
+          <span class="rc-meta-pill" id="rc-meta-div">DIVISI 1 • PMSE</span>
+          <span class="rc-meta-pill" id="rc-meta-dim">Panjang: 1,018 m • Lebar: 7 m • 0.71 Ha</span>
+        </div>
+      </div>
+
+      <div class="rc-controls">
+        <!-- Quick Switcher for Surveyed Roads -->
+        <select class="select-custom" id="rc-road-switcher" onchange="onSelectSurveyedRoad(this.value)" title="Pilih Ruas Jalan yang Memiliki Data Survei">
+          <option value="">🛣️ Pilih Ruas Jalan Bersurvei...</option>
+        </select>
+
+        <!-- View Mode Switcher: Parallel Maps Grid vs Linear Strip -->
+        <select class="select-custom" id="rc-view-mode" onchange="renderRoadCorridorComparison()" title="Pilih Mode Tampilan Komparasi">
+          <option value="maps">🗺️ Peta Jejak Paralel (Grid Tanpa Scroll)</option>
+          <option value="strip">📊 Linear Strip (0 m – L m)</option>
+        </select>
+
+        <!-- Direction Filter -->
+        <select class="select-custom" id="rc-dir-filter" onchange="renderRoadCorridorComparison()">
+          <option value="all">↕️ Semua Arah Lintasan</option>
+          <option value="forward">➡️ Arah Maju (0 m → Ujung)</option>
+          <option value="reverse">⬅️ Arah Balik (Ujung → 0 m)</option>
+        </select>
+
+        <!-- Metric Selector -->
+        <select class="select-custom" id="rc-metric-select" onchange="renderRoadCorridorComparison()">
+          <option value="status">🚦 Warna: Kondisi Jalan (Status)</option>
+          <option value="iri">📉 Warna: Roughness (IRI)</option>
+          <option value="vibration">⚡ Warna: Z-Shock (Guncangan)</option>
+          <option value="speed">🏎️ Warna: Kecepatan (km/h)</option>
+        </select>
+
+        <button class="action-btn" style="background:#ef4444; border-color:#ef4444; color:#fff;" onclick="closeRoadCorridorModal()">
+          ✕ Tutup
+        </button>
+      </div>
+    </div>
+
+    <div class="rc-body">
+      <!-- Left Pane: Dedicated Corridor Mini-Map & Summary -->
+      <div class="rc-left-pane">
+        <div id="road-mini-map"></div>
+        <div class="rc-summary-box">
+          <div class="rc-stat-item">
+            <span class="val" id="rc-kpi-passes">0 Lintasan</span>
+            <span class="lbl">Total Lewat (Maju / Balik)</span>
+          </div>
+          <div class="rc-stat-item">
+            <span class="val" id="rc-kpi-days">0 Hari</span>
+            <span class="lbl">Tanggal Survei</span>
+          </div>
+          <div class="rc-stat-item">
+            <span class="val" id="rc-kpi-iri">0.00</span>
+            <span class="lbl">Rata-rata IRI / Speed</span>
+          </div>
+          <div class="rc-stat-item" style="border-color: rgba(239, 68, 68, 0.4);">
+            <span class="val" style="color:#ef4444;" id="rc-kpi-severe">0 Segmen</span>
+            <span class="lbl">Total Titik Rusak Berat</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Pane: Aligned Linear Strip Bars & Pass Cards -->
+      <div class="rc-right-pane">
+        <div class="rc-ruler-header">
+          <div class="rc-axis-endpoints">
+            <span id="rc-axis-start-lbl">⬇️ Ujung Selatan (0 m)</span>
+            <span id="rc-hover-pos-lbl" style="color:#fbbf24; font-weight:800;">Arahkan kursor ke bar untuk melihat posisi meter & peta</span>
+            <span id="rc-axis-end-lbl">Ujung Utara (1,000 m) ⬆️</span>
+          </div>
+          <div class="rc-ruler-ticks" id="rc-ruler-ticks"></div>
+
+          <!-- Consensus / Aggregated Hotspot Strip across all passes -->
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#cbd5e1; margin-bottom:4px;">
+            <span>🔥 <strong>Peta Konsensus Titik Rawan (Gabungan Seluruh Lintasan & Hari)</strong> — Titik merah yang berulang di posisi meter yang sama:</span>
+            <span style="color:#94a3b8;">Klik segmen bar untuk detail grafik 3-Axis</span>
+          </div>
+          <div class="linear-strip-track" id="rc-consensus-strip" style="height:18px;" onmousemove="onStripMouseMove(event)" onmouseleave="onStripMouseLeave()">
+            <div class="strip-cursor-line"></div>
+          </div>
+        </div>
+
+        <div class="rc-cards-scroll" id="rc-cards-container">
+          <!-- Dynamically populated Pass Cards -->
+        </div>
+        <div class="rc-maps-grid" id="rc-maps-grid" style="display:none;">
+          <!-- Dynamically populated Side-by-Side Synchronized Pass Maps -->
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="static/leaflet.js"></script>
   <script src="static/chart.umd.min.js"></script>
@@ -1161,6 +1879,7 @@
     let map;
     let basemapLayers = {};
     let blocksGeoJsonLayer = null;
+    let roadsGeoJsonLayer = null;
     let roadSegmentsLayers = [];
     let vehicleMarker = null;
     let activeInspectorChart = null;
@@ -1170,9 +1889,13 @@
     let currentDate = '20261103';
     let selectedDates = new Set(['20261103']);
     let currentMetric = 'status';
+    let selectedEstate = 'all';
     let selectedDivision = 'all';
     let blockFilterQuery = '';
     let showBlocks = true;
+    let showRoads = true;
+    let customRoadsFeatures = [];
+    let baseRoadsFeatures = [];
 
     const ALL_SURVEY_DATES = ['20261103', '20261104', '20261105', '20261106'];
     const DATE_LABELS = {
@@ -1196,6 +1919,7 @@
       '20261106': []
     };
     let pmseBlocksData = null;
+    let pmseRoadsData = null;
     let summaryStats = null;
 
     // Simulation / Playback state
@@ -1220,20 +1944,30 @@
       'DIVISI 6': '#ec4899'
     };
 
+    const roadTypeColors = {
+      'Jalan Raya': { fill: '#ec4899', stroke: '#f472b6' },
+      'Jalan MR': { fill: '#f59e0b', stroke: '#fbbf24' },
+      'Jalan CR': { fill: '#fb923c', stroke: '#fdba74' },
+      'Jalan Kontur': { fill: '#38bdf8', stroke: '#7dd3fc' }
+    };
+
     // Initialize Application
     window.addEventListener('DOMContentLoaded', async () => {
       initMap();
       await loadInitialData();
+      buildRoadSurveyIndex();
       renderBlocks();
+      renderRoads();
+      renderCustomRoadsList();
       initTimeBoundsForDate();
       renderTracks();
       updateStatsUI();
     });
 
     function initMap() {
-      // PMSE Center Coordinates ~ 1.015, 116.94 (preferCanvas for fast rendering of 7,000+ segments)
+      // PMSE & JLYE Center Coordinates ~ 1.005, 116.955 (preferCanvas for fast rendering of 7,000+ segments)
       map = L.map('map', {
-        center: [1.005, 116.945],
+        center: [1.005, 116.955],
         zoom: 13,
         zoomControl: false,
         preferCanvas: true
@@ -1269,6 +2003,9 @@
       });
       vehicleMarker = L.marker([1.015, 116.945], { icon: carIcon, zIndexOffset: 1000 }).addTo(map);
       vehicleMarker.setOpacity(0);
+
+      // Map click listener for interactive road / polygon drawing
+      map.on('click', onMapDrawClick);
     }
 
     function setBasemap(type) {
@@ -1280,8 +2017,9 @@
 
     async function loadInitialData() {
       try {
-        const [blocksRes, s3Res, s4Res, s5Res, s6Res, statsRes] = await Promise.all([
+        const [blocksRes, roadsRes, s3Res, s4Res, s5Res, s6Res, statsRes] = await Promise.all([
           fetch('data/pmse_blocks.json'),
+          fetch('data/pmse_roads.json'),
           fetch('data/data_20261103.json'),
           fetch('data/data_20261104.json'),
           fetch('data/data_20261105.json'),
@@ -1290,12 +2028,36 @@
         ]);
 
         pmseBlocksData = await blocksRes.json();
+        pmseRoadsData = await roadsRes.json();
+        baseRoadsFeatures = (pmseRoadsData.features || []).slice();
+
+        // Load user-drawn custom roads from backend API (or localStorage fallback)
+        try {
+          const customRes = await fetch('/api/custom_roads');
+          if (customRes.ok) {
+            const customJson = await customRes.json();
+            if (customJson && Array.isArray(customJson.features) && customJson.features.length > 0) {
+              customRoadsFeatures = customJson.features;
+            }
+          }
+        } catch (e) {}
+        if (customRoadsFeatures.length === 0) {
+          try {
+            const localSaved = localStorage.getItem('rose_custom_roads_v1');
+            if (localSaved) {
+              const parsed = JSON.parse(localSaved);
+              if (Array.isArray(parsed)) customRoadsFeatures = parsed;
+            }
+          } catch (e) {}
+        }
+        pmseRoadsData.features = baseRoadsFeatures.concat(customRoadsFeatures);
+
         allSegmentsData['20261103'] = await s3Res.json();
         allSegmentsData['20261104'] = await s4Res.json();
         allSegmentsData['20261105'] = await s5Res.json();
         allSegmentsData['20261106'] = await s6Res.json();
         summaryStats = await statsRes.json();
-        console.log("All 4 survey dates loaded successfully!");
+        console.log("All 4 survey dates, PMSE+JLYE blocks, and road corridors loaded successfully!");
       } catch (err) {
         console.error("Error loading data:", err);
       }
@@ -1309,9 +2071,14 @@
 
       blocksGeoJsonLayer = L.geoJSON(pmseBlocksData, {
         style: (feature) => {
-          const div = feature.properties.divisi || 'DIVISI 1';
+          const p = feature.properties;
+          const div = p.divisi || 'DIVISI 1';
+          const est = p.estate || 'PMSE';
           const baseColor = divisionColors[div] || '#3b82f6';
-          const isSelected = selectedDivision === 'all' || selectedDivision === div;
+          const isEstMatch = selectedEstate === 'all' || selectedEstate === est;
+          const isDivMatch = selectedDivision === 'all' || selectedDivision === div;
+          const isSearchMatch = !blockFilterQuery || (p.blok || '').toLowerCase().includes(blockFilterQuery);
+          const isSelected = isEstMatch && isDivMatch && isSearchMatch;
 
           return {
             fillColor: baseColor,
@@ -1323,14 +2090,18 @@
         },
         onEachFeature: (feature, layer) => {
           const p = feature.properties;
+          const luasStr = p.hectare ? ` • ${p.hectare} Ha` : '';
+          const ketStr = p.keterangan ? `<div style="color:#cbd5e1; font-size:10px;">${p.keterangan}${luasStr}</div>` : '';
           const tooltipContent = `
             <div style="font-weight:700; color:#fff;">Blok ${p.blok}</div>
+            ${ketStr}
             <div style="color:#94a3b8; font-size:10px;">${p.divisi} • ${p.estate}</div>
           `;
           layer.bindTooltip(tooltipContent, { className: 'block-tooltip', sticky: true });
 
-          // Zoom to block on click
-          layer.on('click', () => {
+          // Zoom to block on click (unless drawing mode is active)
+          layer.on('click', (e) => {
+            if (isDrawToolOpen) return;
             map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 16 });
           });
         }
@@ -1341,16 +2112,1448 @@
       }
     }
 
+    function getRoadPolygonStyle(feature, isHover = false) {
+      const p = feature.properties;
+      const div = p.divisi || 'DIVISI 1';
+      const est = p.estate || 'PMSE';
+      const rColors = roadTypeColors[p.keterangan] || { fill: '#f59e0b', stroke: '#fbbf24' };
+      const isEstMatch = selectedEstate === 'all' || selectedEstate === est;
+      const isDivMatch = selectedDivision === 'all' || selectedDivision === div;
+      const isSearchMatch = !blockFilterQuery || (p.antar_blok || p.blok || '').toLowerCase().includes(blockFilterQuery);
+      const isSelected = isEstMatch && isDivMatch && isSearchMatch;
+      const hasPasses = (feature._passes && feature._passes.length > 0);
+      const isHighwayOrCustom = p.keterangan === 'Jalan Raya' || p.is_custom;
+
+      if (isHover) {
+        return {
+          fillColor: rColors.fill,
+          fillOpacity: 0.72,
+          color: '#ffffff',
+          weight: 2.4,
+          opacity: 1.0
+        };
+      }
+      return {
+        fillColor: rColors.fill,
+        fillOpacity: isSelected ? (hasPasses ? 0.48 : (isHighwayOrCustom ? 0.38 : 0.30)) : 0.04,
+        color: hasPasses ? (isHighwayOrCustom ? '#f472b6' : '#fde047') : rColors.stroke,
+        weight: isSelected ? (hasPasses ? 1.8 : 1.1) : 0.4,
+        opacity: isSelected ? 0.94 : 0.15
+      };
+    }
+
+    function renderRoads() {
+      if (!pmseRoadsData) return;
+      if (roadsGeoJsonLayer) {
+        map.removeLayer(roadsGeoJsonLayer);
+      }
+
+      roadsGeoJsonLayer = L.geoJSON(pmseRoadsData, {
+        style: (feature) => getRoadPolygonStyle(feature, false),
+        onEachFeature: (feature, layer) => {
+          const p = feature.properties;
+          const passCnt = feature._passes ? feature._passes.length : 0;
+          const segCnt = feature._segCount || 0;
+          const passInfoHtml = passCnt > 0
+            ? `<div style="color:#4ade80; font-size:10px; font-weight:700; margin-top:2px;">📊 ${passCnt} Lintasan Survei (${segCnt} Segmen) • Klik untuk Komparasi</div>`
+            : `<div style="color:#94a3b8; font-size:10px; margin-top:2px;">Klik untuk buka detail ruas jalan</div>`;
+
+          const tooltipContent = `
+            <div style="font-weight:700; color:#fbbf24;">🛣️ ${p.keterangan} (${p.antar_blok})</div>
+            <div style="color:#e2e8f0; font-size:10px;">Panjang: <strong>${p.panjang_m} m</strong> • Lebar: <strong>${p.lebar_m} m</strong> • Luas: <strong>${p.hectare} Ha</strong></div>
+            <div style="color:#94a3b8; font-size:10px;">${p.divisi} • ${p.estate}${p.is_custom ? ' • Custom' : ''}</div>
+            ${passInfoHtml}
+          `;
+          layer.bindTooltip(tooltipContent, { className: 'block-tooltip', sticky: true });
+
+          layer.on('mouseover', () => {
+            layer.setStyle(getRoadPolygonStyle(feature, true));
+          });
+          layer.on('mouseout', () => {
+            layer.setStyle(getRoadPolygonStyle(feature, false));
+          });
+          layer.on('click', (e) => {
+            if (isDrawToolOpen) return; // Allow map click to add drawing vertex
+            L.DomEvent.stopPropagation(e);
+            openRoadCorridorModal(feature);
+          });
+        }
+      });
+
+      if (showRoads) {
+        roadsGeoJsonLayer.addTo(map);
+      }
+    }
+
     function toggleBlocksLayer() {
       showBlocks = !showBlocks;
       document.getElementById('blocks-toggle-icon').textContent = showBlocks ? '👁️' : '🕶️';
       if (blocksGeoJsonLayer) {
         if (showBlocks) {
           blocksGeoJsonLayer.addTo(map);
+          if (showRoads && roadsGeoJsonLayer) roadsGeoJsonLayer.bringToFront();
+          roadSegmentsLayers.forEach(l => l.bringToFront());
         } else {
           map.removeLayer(blocksGeoJsonLayer);
         }
       }
+    }
+
+    function toggleRoadsLayer() {
+      showRoads = !showRoads;
+      document.getElementById('roads-toggle-icon').textContent = showRoads ? '🛣️' : '🕶️';
+      if (roadsGeoJsonLayer) {
+        if (showRoads) {
+          roadsGeoJsonLayer.addTo(map);
+          roadSegmentsLayers.forEach(l => l.bringToFront());
+        } else {
+          map.removeLayer(roadsGeoJsonLayer);
+        }
+      }
+    }
+
+    // =========================================================================
+    // ROAD CORRIDOR MULTI-DATE & MULTI-PASS COMPARISON ENGINE (CURVILINEAR)
+    // =========================================================================
+    const RC_LON0 = 116.945, RC_LAT0 = 1.015, RC_SX = 111302.0, RC_SY = 110574.0;
+    let rcMiniMap = null;
+    let rcMiniBaseLayer = null;
+    let rcMiniOverlayGroup = null;
+    let rcHoverMarker = null;
+    let rcPassPolylines = [];
+    let currentRoadFeature = null;
+    let surveyedRoadsList = [];
+
+    function lonLatToM(lon, lat) {
+      return [(lon - RC_LON0) * RC_SX, (lat - RC_LAT0) * RC_SY];
+    }
+
+    function mToLatLon(xm, ym) {
+      return [RC_LAT0 + ym / RC_SY, RC_LON0 + xm / RC_SX];
+    }
+
+    function mToLonLat(xm, ym) {
+      return [RC_LON0 + xm / RC_SX, RC_LAT0 + ym / RC_SY];
+    }
+
+    function pointToSegmentDistM(px, py, x1, y1, x2, y2) {
+      const dx = x2 - x1, dy = y2 - y1;
+      if (dx === 0 && dy === 0) return Math.hypot(px - x1, py - y1);
+      const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)));
+      return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+    }
+
+    function pointInRingM(px, py, ringM) {
+      let inside = false;
+      for (let i = 0, j = ringM.length - 1; i < ringM.length; j = i++) {
+        const xi = ringM[i][0], yi = ringM[i][1];
+        const xj = ringM[j][0], yj = ringM[j][1];
+        if (((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi + 1e-12) + xi)) {
+          inside = !inside;
+        }
+      }
+      return inside;
+    }
+
+    function pointToPolyDistM(px, py, ringsM) {
+      for (const ring of ringsM) {
+        if (pointInRingM(px, py, ring)) return 0.0;
+      }
+      let best = Infinity;
+      for (const ring of ringsM) {
+        for (let i = 0; i < ring.length - 1; i++) {
+          const d = pointToSegmentDistM(px, py, ring[i][0], ring[i][1], ring[i + 1][0], ring[i + 1][1]);
+          if (d < best) best = d;
+        }
+      }
+      return best;
+    }
+
+    function buildCenterlineSegsM(clDeg, fallbackStartM, fallbackEndM) {
+      let ptsM = [];
+      if (Array.isArray(clDeg) && clDeg.length >= 2) {
+        ptsM = clDeg.map(pt => lonLatToM(pt[0], pt[1]));
+      } else {
+        ptsM = [fallbackStartM, fallbackEndM];
+      }
+      const clSegs = [];
+      let cumLen = 0.0;
+      for (let i = 0; i < ptsM.length - 1; i++) {
+        const x1 = ptsM[i][0], y1 = ptsM[i][1];
+        const x2 = ptsM[i + 1][0], y2 = ptsM[i + 1][1];
+        const dx = x2 - x1, dy = y2 - y1;
+        const len = Math.hypot(dx, dy);
+        if (len < 0.05) continue;
+        const tx = dx / len, ty = dy / len;
+        const nx = -ty, ny = tx;
+        clSegs.push({ x1, y1, x2, y2, dx, dy, len, tx, ty, nx, ny, cumStart: cumLen });
+        cumLen += len;
+      }
+      return { clSegs, totalLenM: Math.max(1.0, cumLen) };
+    }
+
+    function projectOntoCenterlineM(px, py, clSegs) {
+      if (!clSegs || clSegs.length === 0) {
+        return { s: 0, dist: Infinity, tx: 1, ty: 0, nx: 0, ny: 1 };
+      }
+      let bestDist = Infinity;
+      let bestS = 0;
+      let bestSeg = clSegs[0];
+      for (let i = 0; i < clSegs.length; i++) {
+        const sg = clSegs[i];
+        const t = Math.max(0, Math.min(1, ((px - sg.x1) * sg.dx + (py - sg.y1) * sg.dy) / (sg.len * sg.len)));
+        const projX = sg.x1 + t * sg.dx;
+        const projY = sg.y1 + t * sg.dy;
+        const d = Math.hypot(px - projX, py - projY);
+        if (d < bestDist) {
+          bestDist = d;
+          bestS = sg.cumStart + t * sg.len;
+          bestSeg = sg;
+        }
+      }
+      return { s: bestS, dist: bestDist, tx: bestSeg.tx, ty: bestSeg.ty, nx: bestSeg.nx, ny: bestSeg.ny };
+    }
+
+    function interpolateAlongCenterlineM(targetS, clSegs) {
+      if (!clSegs || clSegs.length === 0) return [0, 0];
+      const clampedS = Math.max(0, targetS);
+      for (let i = 0; i < clSegs.length; i++) {
+        const sg = clSegs[i];
+        if (clampedS <= sg.cumStart + sg.len || i === clSegs.length - 1) {
+          const localS = Math.max(0, Math.min(sg.len, clampedS - sg.cumStart));
+          const t = sg.len > 0 ? localS / sg.len : 0;
+          return [sg.x1 + t * sg.dx, sg.y1 + t * sg.dy];
+        }
+      }
+      const last = clSegs[clSegs.length - 1];
+      return [last.x2, last.y2];
+    }
+
+    function buildRoadSurveyIndex() {
+      if (!pmseRoadsData || !pmseRoadsData.features) return;
+      const feats = pmseRoadsData.features;
+
+      // Precompute metric rings, curvilinear centerline segments & bounding boxes for each road corridor
+      feats.forEach((f, idx) => {
+        f.properties.road_id = idx;
+        const g = f.geometry;
+        const rawRings = g.type === 'Polygon' ? [g.coordinates[0]] : g.coordinates.map(p => p[0]);
+        const ringsM = [];
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        let sumX = 0, sumY = 0, cnt = 0;
+
+        rawRings.forEach(r => {
+          const rm = r.map(pt => {
+            const m = lonLatToM(pt[0], pt[1]);
+            if (m[0] < minX) minX = m[0];
+            if (m[0] > maxX) maxX = m[0];
+            if (m[1] < minY) minY = m[1];
+            if (m[1] > maxY) maxY = m[1];
+            sumX += m[0]; sumY += m[1]; cnt++;
+            return m;
+          });
+          ringsM.push(rm);
+        });
+
+        const p = f.properties;
+        let ux = p.axis_ux !== undefined ? p.axis_ux : (p.keterangan === 'Jalan MR' ? 1.0 : 0.0);
+        let uy = p.axis_uy !== undefined ? p.axis_uy : (p.keterangan === 'Jalan MR' ? 0.0 : 1.0);
+        let pmin = p.axis_pmin !== undefined ? p.axis_pmin : 0;
+        let lenM = p.axis_len_m !== undefined ? p.axis_len_m : (p.panjang_m || 100);
+
+        if (p.axis_pmin === undefined) {
+          let pMinCalc = Infinity, pMaxCalc = -Infinity;
+          ringsM.forEach(rm => rm.forEach(m => {
+            const pr = m[0] * ux + m[1] * uy;
+            if (pr < pMinCalc) pMinCalc = pr;
+            if (pr > pMaxCalc) pMaxCalc = pr;
+          }));
+          pmin = pMinCalc;
+          lenM = Math.max(1.0, pMaxCalc - pMinCalc);
+        }
+
+        const nx = -uy, ny = ux;
+        let nSum = 0;
+        ringsM.forEach(rm => rm.forEach(m => { nSum += (m[0] * nx + m[1] * ny); }));
+        const nMean = cnt > 0 ? nSum / cnt : 0;
+
+        const fbStart = [pmin * ux + nMean * nx, pmin * uy + nMean * ny];
+        const fbEnd = [(pmin + lenM) * ux + nMean * nx, (pmin + lenM) * uy + nMean * ny];
+        const clBuilt = buildCenterlineSegsM(p.centerline, fbStart, fbEnd);
+
+        f._geomMeta = {
+          ringsM,
+          minX: minX - 24,
+          maxX: maxX + 24,
+          minY: minY - 24,
+          maxY: maxY + 24,
+          ux, uy, nx, ny,
+          pmin,
+          lenM: clBuilt.totalLenM || lenM,
+          nMean,
+          clSegs: clBuilt.clSegs
+        };
+        f._rawHits = [];
+        f._passes = [];
+        f._segCount = 0;
+      });
+
+      // Match all 4 dates' telemetry segments to their best aligned road corridor
+      ALL_SURVEY_DATES.forEach(dt => {
+        const segs = allSegmentsData[dt] || [];
+        segs.forEach(seg => {
+          const c = seg.coords;
+          if (!c || c.length < 2) return;
+          const p0 = lonLatToM(c[0][1], c[0][0]);
+          const p1 = lonLatToM(c[c.length - 1][1], c[c.length - 1][0]);
+          const pm = lonLatToM(c[Math.floor(c.length / 2)][1], c[Math.floor(c.length / 2)][0]);
+          const dx = p1[0] - p0[0], dy = p1[1] - p0[1];
+          const sL = Math.hypot(dx, dy);
+
+          let bestFeat = null;
+          let bestDist = 20.0;
+
+          for (let i = 0; i < feats.length; i++) {
+            const gm = feats[i]._geomMeta;
+            if (pm[0] < gm.minX || pm[0] > gm.maxX || pm[1] < gm.minY || pm[1] > gm.maxY) continue;
+            const dPoly = pointToPolyDistM(pm[0], pm[1], gm.ringsM);
+            if (dPoly > bestDist) continue;
+
+            // Check alignment against local tangent of the closest centerline segment
+            const clMid = projectOntoCenterlineM(pm[0], pm[1], gm.clSegs);
+            if (sL > 1.5) {
+              const dot = Math.abs(dx * clMid.tx + dy * clMid.ty) / sL;
+              if (dot < 0.62) continue; // Filter perpendicular cross-traffic at intersections
+            }
+            if (dPoly < bestDist) {
+              bestDist = dPoly;
+              bestFeat = feats[i];
+            }
+          }
+
+          if (bestFeat) {
+            const gm = bestFeat._geomMeta;
+            const pr0 = projectOntoCenterlineM(p0[0], p0[1], gm.clSegs);
+            const pr1 = projectOntoCenterlineM(p1[0], p1[1], gm.clSegs);
+            const pos0 = Math.max(0, Math.min(gm.lenM, pr0.s));
+            const pos1 = Math.max(0, Math.min(gm.lenM, pr1.s));
+            bestFeat._rawHits.push({
+              date: dt,
+              tSec: timeStrToSeconds(seg.start),
+              seg: seg,
+              pos0: pos0,
+              pos1: pos1,
+              nx: pr0.nx,
+              ny: pr0.ny,
+              dir: (pos1 - pos0) >= 0 ? 1 : -1
+            });
+          }
+        });
+      });
+
+      // Group hits into directional Passes per road corridor
+      surveyedRoadsList = [];
+      feats.forEach(f => {
+        const hits = f._rawHits;
+        if (!hits || hits.length === 0) return;
+
+        const byDate = {};
+        hits.forEach(h => {
+          if (!byDate[h.date]) byDate[h.date] = [];
+          byDate[h.date].push(h);
+        });
+
+        const passes = [];
+        Object.keys(byDate).sort().forEach(dt => {
+          const list = byDate[dt].sort((a, b) => a.tSec - b.tSec);
+          const rawPasses = [];
+          list.forEach(item => {
+            if (rawPasses.length === 0) {
+              rawPasses.push([item]);
+              return;
+            }
+            const cur = rawPasses[rawPasses.length - 1];
+            const prev = cur[cur.length - 1];
+            const dtGap = item.tSec - prev.tSec;
+            const netDelta = cur.reduce((acc, x) => acc + (x.pos1 - x.pos0), 0);
+            const passDir = netDelta >= 0 ? 1 : -1;
+            const deltaAlong = (item.pos0 - prev.pos1) * passDir;
+            const dirFlipped = cur.length >= 2 && item.dir !== passDir && Math.abs(item.pos1 - item.pos0) > 3.0;
+
+            if (dtGap > 300 || dirFlipped || deltaAlong < -80.0) {
+              rawPasses.push([item]);
+            } else {
+              cur.push(item);
+            }
+          });
+
+          rawPasses.forEach(rp => {
+            if (rp.length < 2) return;
+            const allPos = [];
+            rp.forEach(x => { allPos.push(x.pos0, x.pos1); });
+            const minSpan = Math.min(...allPos);
+            const maxSpan = Math.max(...allPos);
+            if ((maxSpan - minSpan) < 15.0) return; // Ignore stationary turns at intersections
+
+            const netMove = rp[rp.length - 1].pos1 - rp[0].pos0;
+            const isForward = netMove >= 0;
+            const startHms = rp[0].seg.start ? rp[0].seg.start.split('T')[1].split('.')[0] : '--:--:--';
+            const endRaw = rp[rp.length - 1].seg.end || rp[rp.length - 1].seg.start;
+            const endHms = endRaw ? endRaw.split('T')[1].split('.')[0] : '--:--:--';
+            const durSec = Math.max(1, rp[rp.length - 1].tSec - rp[0].tSec);
+
+            const avgSpd = rp.reduce((s, x) => s + (x.seg.avg_speed || 0), 0) / rp.length;
+            const avgIri = rp.reduce((s, x) => s + (x.seg.iri || 0), 0) / rp.length;
+            const maxZ = Math.max(...rp.map(x => x.seg.z_peak || 0));
+            const counts = { GREEN: 0, YELLOW: 0, ORANGE: 0, RED: 0 };
+            rp.forEach(x => { if (counts[x.seg.color] !== undefined) counts[x.seg.color]++; });
+
+            passes.push({
+              date: dt,
+              startHms,
+              endHms,
+              durSec,
+              isForward,
+              posStart: Math.round(rp[0].pos0),
+              posEnd: Math.round(rp[rp.length - 1].pos1),
+              minSpan: Math.round(minSpan),
+              maxSpan: Math.round(maxSpan),
+              avgSpd: avgSpd.toFixed(1),
+              avgIri: avgIri.toFixed(2),
+              maxZ: maxZ.toFixed(2),
+              counts,
+              items: rp
+            });
+          });
+        });
+
+        f._passes = passes;
+        f._segCount = passes.reduce((s, p) => s + p.items.length, 0);
+        if (passes.length > 0) {
+          surveyedRoadsList.push(f);
+        }
+      });
+
+      // Sort surveyed roads by pass count & segment count descending
+      surveyedRoadsList.sort((a, b) => (b._passes.length - a._passes.length) || (b._segCount - a._segCount));
+
+      const switcher = document.getElementById('rc-road-switcher');
+      if (switcher) {
+        switcher.innerHTML = `<option value="">🛣️ Pilih Ruas Jalan Bersurvei (${surveyedRoadsList.length} Ruas)...</option>`;
+        surveyedRoadsList.forEach(f => {
+          const p = f.properties;
+          const daysCnt = new Set(f._passes.map(x => x.date)).size;
+          const opt = document.createElement('option');
+          opt.value = p.road_id;
+          opt.textContent = `[${p.estate}] ${p.keterangan} • ${p.antar_blok} (${p.divisi}) — ${f._passes.length} Lintasan / ${daysCnt} Hari`;
+          switcher.appendChild(opt);
+        });
+      }
+    }
+
+    function getDirectionLabels(roadType, lenM) {
+      const L = Math.round(lenM);
+      if (roadType === 'Jalan MR') {
+        return {
+          axisStart: `⬅️ Ujung Barat (0 m)`,
+          axisEnd: `Ujung Timur (${L} m) ➡️`,
+          fwdBadge: `➡️ Arah Timur (Barat 0 m → Timur ${L} m)`,
+          revBadge: `⬅️ Arah Balik / Barat (Timur ${L} m → Barat 0 m)`
+        };
+      } else if (roadType === 'Jalan CR') {
+        return {
+          axisStart: `⬇️ Ujung Selatan (0 m)`,
+          axisEnd: `Ujung Utara (${L} m) ⬆️`,
+          fwdBadge: `⬆️ Arah Utara (Selatan 0 m → Utara ${L} m)`,
+          revBadge: `⬇️ Arah Balik / Selatan (Utara ${L} m → Selatan 0 m)`
+        };
+      }
+      return {
+        axisStart: `↙️ Ujung Awal (0 m)`,
+        axisEnd: `Ujung Akhir (${L} m) ↗️`,
+        fwdBadge: `↗️ Arah Maju (0 m → ${L} m)`,
+        revBadge: `↙️ Arah Balik (${L} m → 0 m)`
+      };
+    }
+
+    function openDefaultRoadCorridorModal() {
+      if (currentRoadFeature) {
+        openRoadCorridorModal(currentRoadFeature);
+      } else if (surveyedRoadsList.length > 0) {
+        // Default to a corridor with multi-day forward & reverse passes (e.g. C-14 – C-15 or first in list)
+        const preferred = surveyedRoadsList.find(f => f.properties.antar_blok === 'C-14 – C-15') || surveyedRoadsList[0];
+        openRoadCorridorModal(preferred);
+      }
+    }
+
+    function onSelectSurveyedRoad(roadIdStr) {
+      if (roadIdStr === '' || !pmseRoadsData) return;
+      const rid = parseInt(roadIdStr, 10);
+      const found = pmseRoadsData.features.find(f => f.properties.road_id === rid);
+      if (found) {
+        openRoadCorridorModal(found);
+      }
+    }
+
+    let rcGridMaps = [];
+    let rcGridHoverMarkers = [];
+    let _isSyncingGridMaps = false;
+
+    function destroyRcGridMaps() {
+      rcGridMaps.forEach(m => {
+        try { m.remove(); } catch (e) {}
+      });
+      rcGridMaps = [];
+      rcGridHoverMarkers = [];
+    }
+
+    function syncGridMapsView(sourceMap) {
+      if (_isSyncingGridMaps) return;
+      _isSyncingGridMaps = true;
+      const center = sourceMap.getCenter();
+      const zoom = sourceMap.getZoom();
+      rcGridMaps.forEach(m => {
+        if (m !== sourceMap) {
+          m.setView(center, zoom, { animate: false });
+        }
+      });
+      if (rcMiniMap && rcMiniMap !== sourceMap) {
+        rcMiniMap.setView(center, zoom, { animate: false });
+      }
+      _isSyncingGridMaps = false;
+    }
+
+    function syncGridHoverLatLng(latlng) {
+      rcGridHoverMarkers.forEach(mk => {
+        if (latlng) {
+          mk.setLatLng(latlng);
+          mk.setOpacity(1);
+        } else {
+          mk.setOpacity(0);
+        }
+      });
+      if (rcHoverMarker) {
+        if (latlng) {
+          rcHoverMarker.setLatLng(latlng);
+          rcHoverMarker.setOpacity(1);
+        } else {
+          rcHoverMarker.setOpacity(0);
+        }
+      }
+    }
+
+    function closeRoadCorridorModal() {
+      destroyRcGridMaps();
+      document.getElementById('road-corridor-overlay').style.display = 'none';
+    }
+
+    function getRcSegmentColor(seg, metric) {
+      if (metric === 'status') {
+        const c = seg.color;
+        if (c === 'GREEN') return '#22c55e';
+        if (c === 'YELLOW') return '#eab308';
+        if (c === 'ORANGE') return '#f97316';
+        if (c === 'RED') return '#ef4444';
+        return '#3b82f6';
+      } else if (metric === 'iri') {
+        const iri = seg.iri || 0;
+        if (iri < 2.0) return '#22c55e';
+        if (iri < 4.0) return '#eab308';
+        if (iri < 8.0) return '#f97316';
+        return '#ef4444';
+      } else if (metric === 'vibration') {
+        const z = seg.z_peak || 0;
+        if (z < 3.5) return '#22c55e';
+        if (z < 7.0) return '#eab308';
+        return '#ef4444';
+      } else if (metric === 'speed') {
+        const spd = seg.avg_speed || 0;
+        if (spd < 15) return '#3b82f6';
+        if (spd < 25) return '#22c55e';
+        if (spd < 35) return '#eab308';
+        return '#ef4444';
+      }
+      return '#3b82f6';
+    }
+
+    function openRoadCorridorModal(feature) {
+      currentRoadFeature = feature;
+      const overlay = document.getElementById('road-corridor-overlay');
+      overlay.style.display = 'flex';
+
+      const switcher = document.getElementById('rc-road-switcher');
+      if (switcher) {
+        switcher.value = feature.properties.road_id;
+      }
+
+      // Initialize mini-map once
+      if (!rcMiniMap) {
+        rcMiniMap = L.map('road-mini-map', {
+          center: [1.005, 116.945],
+          zoom: 16,
+          zoomControl: true,
+          preferCanvas: true
+        });
+        rcMiniBaseLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19
+        }).addTo(rcMiniMap);
+        rcMiniOverlayGroup = L.layerGroup().addTo(rcMiniMap);
+
+        const crosshairIcon = L.divIcon({
+          className: 'rc-crosshair-marker',
+          html: '<div style="width:14px;height:14px;border-radius:50%;background:#fbbf24;border:2.5px solid #fff;box-shadow:0 0 12px #fbbf24;"></div>',
+          iconSize: [14, 14],
+          iconAnchor: [7, 7]
+        });
+        rcHoverMarker = L.marker([1.005, 116.945], { icon: crosshairIcon, zIndexOffset: 2000 }).addTo(rcMiniMap);
+        rcHoverMarker.setOpacity(0);
+      }
+
+      setTimeout(() => {
+        rcMiniMap.invalidateSize();
+        renderRoadCorridorComparison();
+      }, 60);
+    }
+
+    function renderRoadCorridorComparison() {
+      if (!currentRoadFeature) return;
+      const f = currentRoadFeature;
+      const p = f.properties;
+      const gm = f._geomMeta;
+      const lenM = Math.max(10, Math.round(gm ? gm.lenM : (p.panjang_m || 100)));
+
+      const dirFilter = document.getElementById('rc-dir-filter').value;
+      const rcMetric = document.getElementById('rc-metric-select').value;
+      const dirLabels = getDirectionLabels(p.keterangan, lenM);
+
+      // Update Header
+      document.getElementById('rc-badge-type').textContent = `🛣️ ${p.keterangan}`;
+      document.getElementById('rc-title-blok').textContent = `Blok ${p.antar_blok}`;
+      document.getElementById('rc-meta-div').textContent = `${p.divisi} • ${p.estate}`;
+      document.getElementById('rc-meta-dim').textContent = `Panjang: ${p.panjang_m} m • Lebar: ${p.lebar_m} m • ${p.hectare} Ha`;
+
+      // Update Ruler Labels & Ticks
+      document.getElementById('rc-axis-start-lbl').textContent = dirLabels.axisStart;
+      document.getElementById('rc-axis-end-lbl').textContent = dirLabels.axisEnd;
+
+      const ticksEl = document.getElementById('rc-ruler-ticks');
+      ticksEl.innerHTML = '';
+      const stepCount = 10;
+      for (let i = 0; i <= stepCount; i++) {
+        const pct = (i / stepCount) * 100;
+        const mVal = Math.round((i / stepCount) * lenM);
+        const tick = document.createElement('div');
+        tick.className = 'rc-tick';
+        tick.style.left = `${pct}%`;
+        tick.textContent = `${mVal} m`;
+        ticksEl.appendChild(tick);
+      }
+
+      // Filter Passes by Direction
+      const allPasses = f._passes || [];
+      const filteredPasses = allPasses.filter(ps => {
+        if (dirFilter === 'forward') return ps.isForward;
+        if (dirFilter === 'reverse') return !ps.isForward;
+        return true;
+      });
+
+      // Update Summary KPIs
+      const fwdCnt = filteredPasses.filter(ps => ps.isForward).length;
+      const revCnt = filteredPasses.filter(ps => !ps.isForward).length;
+      const uniqueDays = new Set(filteredPasses.map(ps => ps.date)).size;
+      const allItems = filteredPasses.flatMap(ps => ps.items);
+      const meanIri = allItems.length ? (allItems.reduce((s, x) => s + (x.seg.iri || 0), 0) / allItems.length).toFixed(2) : '0.00';
+      const meanSpd = allItems.length ? (allItems.reduce((s, x) => s + (x.seg.avg_speed || 0), 0) / allItems.length).toFixed(1) : '0.0';
+      const totalSevere = allItems.filter(x => x.seg.color === 'RED').length;
+
+      document.getElementById('rc-kpi-passes').textContent = `${filteredPasses.length} (${fwdCnt} Maju / ${revCnt} Balik)`;
+      document.getElementById('rc-kpi-days').textContent = `${uniqueDays} Tanggal`;
+      document.getElementById('rc-kpi-iri').textContent = `${meanIri} / ${meanSpd} km/h`;
+      document.getElementById('rc-kpi-severe').textContent = `${totalSevere} Segmen`;
+
+      // Render Mini-Map Layers
+      if (rcMiniMap && rcMiniOverlayGroup) {
+        rcMiniOverlayGroup.clearLayers();
+        rcPassPolylines = [];
+
+        // Context blocks
+        if (pmseBlocksData) {
+          L.geoJSON(pmseBlocksData, {
+            style: {
+              fillColor: '#10b981',
+              fillOpacity: 0.08,
+              color: '#10b981',
+              weight: 1,
+              opacity: 0.5
+            }
+          }).addTo(rcMiniOverlayGroup);
+        }
+
+        // Highlighted road corridor polygon
+        const roadLayer = L.geoJSON(f, {
+          style: {
+            fillColor: '#f59e0b',
+            fillOpacity: 0.28,
+            color: '#fde047',
+            weight: 2.5,
+            opacity: 1.0
+          }
+        }).addTo(rcMiniOverlayGroup);
+
+        rcMiniMap.fitBounds(roadLayer.getBounds(), { padding: [35, 35], maxZoom: 17 });
+
+        // Draw each pass's segments with slight perpendicular offset so multiple passes are visible
+        filteredPasses.forEach((ps, pIdx) => {
+          const offsetMeters = (pIdx - (filteredPasses.length - 1) / 2) * 1.4;
+          const passGroup = [];
+
+          ps.items.forEach(item => {
+            const inx = item.nx !== undefined ? item.nx : (gm ? gm.nx : 0);
+            const iny = item.ny !== undefined ? item.ny : (gm ? gm.ny : 0);
+            const dLat = (iny * offsetMeters) / RC_SY;
+            const dLon = (inx * offsetMeters) / RC_SX;
+            const shiftedCoords = item.seg.coords.map(c => [c[0] + dLat, c[1] + dLon]);
+            const col = getRcSegmentColor(item.seg, rcMetric);
+            const pl = L.polyline(shiftedCoords, {
+              color: col,
+              weight: item.seg.color === 'RED' ? 5 : 3.5,
+              opacity: 0.9
+            }).addTo(rcMiniOverlayGroup);
+            pl.on('click', () => openSegmentInspector(item.seg));
+            passGroup.push(pl);
+          });
+          rcPassPolylines.push(passGroup);
+        });
+      }
+
+      // Render Consensus Strip (25m bins along [0..lenM])
+      const consensusEl = document.getElementById('rc-consensus-strip');
+      consensusEl.innerHTML = '<div class="strip-cursor-line"></div>';
+      if (filteredPasses.length > 0) {
+        const numBins = Math.min(60, Math.max(15, Math.round(lenM / 18)));
+        const binSize = lenM / numBins;
+        for (let b = 0; b < numBins; b++) {
+          const bStart = b * binSize;
+          const bEnd = (b + 1) * binSize;
+          const overlapping = allItems.filter(x => {
+            const sMin = Math.min(x.pos0, x.pos1);
+            const sMax = Math.max(x.pos0, x.pos1);
+            return sMax >= bStart && sMin <= bEnd;
+          });
+          if (overlapping.length === 0) continue;
+
+          // Worst condition or average metric in this bin
+          const redCnt = overlapping.filter(x => x.seg.color === 'RED').length;
+          const orgCnt = overlapping.filter(x => x.seg.color === 'ORANGE').length;
+          const yelCnt = overlapping.filter(x => x.seg.color === 'YELLOW').length;
+          let binColor = '#22c55e';
+          if (redCnt > 0) binColor = '#ef4444';
+          else if (orgCnt > 0) binColor = '#f97316';
+          else if (yelCnt > 0) binColor = '#eab308';
+
+          const binDiv = document.createElement('div');
+          binDiv.className = 'linear-strip-seg';
+          binDiv.style.left = `${(b / numBins) * 100}%`;
+          binDiv.style.width = `${(1 / numBins) * 100 + 0.2}%`;
+          binDiv.style.background = binColor;
+          binDiv.style.opacity = redCnt >= 2 ? '1.0' : '0.82';
+          binDiv.title = `Posisi ${Math.round(bStart)}–${Math.round(bEnd)} m • ${redCnt}x Rusak Berat dari ${overlapping.length} segmen`;
+          consensusEl.appendChild(binDiv);
+        }
+      }
+
+      // Render Stacked Pass Cards OR Synchronized Side-by-Side Pass Maps Grid
+      destroyRcGridMaps();
+      const viewModeEl = document.getElementById('rc-view-mode');
+      const viewMode = viewModeEl ? viewModeEl.value : 'maps';
+      const container = document.getElementById('rc-cards-container');
+      const mapsGridEl = document.getElementById('rc-maps-grid');
+      const rulerHdr = document.querySelector('.rc-ruler-header');
+
+      container.innerHTML = '';
+      if (mapsGridEl) mapsGridEl.innerHTML = '';
+
+      if (filteredPasses.length === 0) {
+        if (rulerHdr) rulerHdr.style.display = 'block';
+        container.style.display = 'flex';
+        if (mapsGridEl) mapsGridEl.style.display = 'none';
+        container.innerHTML = `
+          <div style="background:#1e293b; border:1px dashed #475569; border-radius:10px; padding:28px; text-align:center; color:#94a3b8;">
+            <div style="font-size:15px; font-weight:700; color:#e2e8f0; margin-bottom:6px;">Belum ada lintasan survei yang terekam pada ruas jalan ini</div>
+            <div style="font-size:12px;">Silakan pilih ruas jalan lain yang memiliki data survei melalui dropdown <strong>"🛣️ Pilih Ruas Jalan Bersurvei..."</strong> di kanan atas, atau klik polygon jalan yang berwarna kuning terang di peta utama.</div>
+          </div>
+        `;
+        return;
+      }
+
+      if (viewMode === 'maps' && mapsGridEl) {
+        if (rulerHdr) rulerHdr.style.display = 'none';
+        container.style.display = 'none';
+        mapsGridEl.style.display = 'grid';
+
+        const nPass = filteredPasses.length;
+        const cols = nPass <= 1 ? 1 : (nPass <= 4 ? 2 : (nPass <= 9 ? 3 : 4));
+        const rows = Math.ceil(nPass / cols);
+        mapsGridEl.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+        mapsGridEl.style.gridTemplateRows = rows <= 3 ? `repeat(${rows}, minmax(0, 1fr))` : `repeat(${rows}, minmax(220px, 1fr))`;
+
+        const roadBounds = L.geoJSON(f).getBounds();
+        const blockBoundsData = pmseBlocksData ? pmseBlocksData.features.filter(bf => {
+          const c = bf.geometry && bf.geometry.coordinates;
+          return c && c.length > 0;
+        }) : [];
+
+        filteredPasses.forEach((ps, pIdx) => {
+          const card = document.createElement('div');
+          card.className = 'pass-map-card';
+
+          const dateColor = DATE_COLORS[ps.date] || '#3b82f6';
+          const dateLabel = DATE_LABELS[ps.date] || ps.date;
+          const dirClass = ps.isForward ? 'pass-dir-forward' : 'pass-dir-reverse';
+          const dirArrow = ps.isForward ? '↗️ Maju' : '↙️ Balik';
+          const mapDivId = `rc-grid-map-${pIdx}`;
+
+          card.innerHTML = `
+            <div class="pass-map-card-hdr">
+              <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+                <span class="pass-date-badge" style="background:${dateColor}; font-size:10px; padding:1px 6px;">${dateLabel}</span>
+                <span style="color:#e2e8f0; font-weight:700;">${ps.startHms}–${ps.endHms}</span>
+                <span class="pass-dir-badge ${dirClass}" style="font-size:10px; padding:1px 6px;">${dirArrow}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px; color:#cbd5e1;">
+                <span>IRI <strong>${ps.avgIri}</strong></span>
+                <span style="color:#4ade80;">🟢${ps.counts.GREEN}</span>
+                <span style="color:#facc15;">🟡${ps.counts.YELLOW}</span>
+                <span style="color:#fb923c;">🟠${ps.counts.ORANGE}</span>
+                <span style="color:#f87171;">🔴${ps.counts.RED}</span>
+              </div>
+            </div>
+            <div class="pass-map-canvas" id="${mapDivId}"></div>
+          `;
+          mapsGridEl.appendChild(card);
+
+          // Initialize individual synchronized Leaflet map for this pass
+          const gMap = L.map(mapDivId, {
+            center: roadBounds.getCenter(),
+            zoom: 16,
+            zoomControl: pIdx === 0,
+            attributionControl: false,
+            preferCanvas: true
+          });
+
+          L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19
+          }).addTo(gMap);
+
+          // Highlighted road polygon
+          L.geoJSON(f, {
+            style: {
+              fillColor: '#f59e0b',
+              fillOpacity: 0.18,
+              color: '#fde047',
+              weight: 1.5,
+              opacity: 0.85
+            }
+          }).addTo(gMap);
+
+          // This pass's exact telemetry track on its true GPS position
+          ps.items.forEach(item => {
+            const col = getRcSegmentColor(item.seg, rcMetric);
+            const pl = L.polyline(item.seg.coords, {
+              color: col,
+              weight: item.seg.color === 'RED' ? 6 : 4.5,
+              opacity: 0.95
+            }).addTo(gMap);
+            const tSeg = item.seg.start ? item.seg.start.split('T')[1].split('.')[0] : '';
+            pl.bindTooltip(`${dateLabel} • ${tSeg}<br><strong>${item.seg.status}</strong> (IRI ${item.seg.iri} • ${item.seg.avg_speed} km/h)`, { sticky: true });
+            pl.on('click', () => openSegmentInspector(item.seg));
+          });
+
+          // Start & End markers to clearly show travel direction on map
+          if (ps.items.length > 0) {
+            const firstC = ps.items[0].seg.coords[0];
+            const lastItem = ps.items[ps.items.length - 1];
+            const lastC = lastItem.seg.coords[lastItem.seg.coords.length - 1];
+            L.circleMarker(firstC, { radius: 5, color: '#fff', weight: 1.5, fillColor: '#22c55e', fillOpacity: 1 })
+              .bindTooltip('Mulai Lintasan').addTo(gMap);
+            L.circleMarker(lastC, { radius: 5, color: '#fff', weight: 1.5, fillColor: '#ef4444', fillOpacity: 1 })
+              .bindTooltip('Akhir Lintasan').addTo(gMap);
+          }
+
+          // Synced hover crosshair marker
+          const chIcon = L.divIcon({
+            className: 'rc-crosshair-marker',
+            html: '<div style="width:12px;height:12px;border-radius:50%;background:#fbbf24;border:2px solid #fff;box-shadow:0 0 10px #fbbf24;"></div>',
+            iconSize: [12, 12],
+            iconAnchor: [6, 6]
+          });
+          const gHoverMk = L.marker(roadBounds.getCenter(), { icon: chIcon, zIndexOffset: 2000, interactive: false }).addTo(gMap);
+          gHoverMk.setOpacity(0);
+          rcGridHoverMarkers.push(gHoverMk);
+
+          gMap.fitBounds(roadBounds, { padding: [18, 18], maxZoom: 17 });
+          gMap.on('moveend zoomend', () => syncGridMapsView(gMap));
+          gMap.on('mousemove', (ev) => syncGridHoverLatLng(ev.latlng));
+          gMap.on('mouseout', () => syncGridHoverLatLng(null));
+
+          rcGridMaps.push(gMap);
+        });
+
+        setTimeout(() => {
+          rcGridMaps.forEach(m => m.invalidateSize());
+        }, 60);
+        return;
+      }
+
+      if (rulerHdr) rulerHdr.style.display = 'block';
+      container.style.display = 'flex';
+      if (mapsGridEl) mapsGridEl.style.display = 'none';
+
+      filteredPasses.forEach((ps, pIdx) => {
+        const card = document.createElement('div');
+        card.className = 'pass-card';
+        card.onmouseenter = () => highlightPassOnMiniMap(pIdx, true);
+        card.onmouseleave = () => highlightPassOnMiniMap(pIdx, false);
+
+        const dateColor = DATE_COLORS[ps.date] || '#3b82f6';
+        const dateLabel = DATE_LABELS[ps.date] || ps.date;
+        const dirClass = ps.isForward ? 'pass-dir-forward' : 'pass-dir-reverse';
+        const dirText = ps.isForward ? dirLabels.fwdBadge : dirLabels.revBadge;
+        const durMin = Math.floor(ps.durSec / 60);
+        const durRemSec = ps.durSec % 60;
+        const durLabel = durMin > 0 ? `${durMin}m ${durRemSec}s` : `${durRemSec}s`;
+
+        card.innerHTML = `
+          <div class="pass-card-header">
+            <div class="pass-card-left">
+              <span class="pass-date-badge" style="background:${dateColor};">📅 ${dateLabel}</span>
+              <span class="pass-time-badge">🕒 ${ps.startHms} – ${ps.endHms} (${durLabel})</span>
+              <span class="pass-dir-badge ${dirClass}">${dirText}</span>
+            </div>
+            <div class="pass-card-metrics">
+              <span><strong>${ps.items.length}</strong> Segmen</span>
+              <span>•</span>
+              <span>Speed: <strong>${ps.avgSpd} km/h</strong></span>
+              <span>•</span>
+              <span>IRI: <strong>${ps.avgIri}</strong></span>
+              <span>•</span>
+              <span>Max Z: <strong>${ps.maxZ} m/s²</strong></span>
+              <span>•</span>
+              <span style="color:#4ade80; font-weight:700;">🟢 ${ps.counts.GREEN}</span>
+              <span style="color:#facc15; font-weight:700;">🟡 ${ps.counts.YELLOW}</span>
+              <span style="color:#fb923c; font-weight:700;">🟠 ${ps.counts.ORANGE}</span>
+              <span style="color:#f87171; font-weight:700;">🔴 ${ps.counts.RED}</span>
+            </div>
+          </div>
+        `;
+
+        // Aligned Linear Strip Bar (0 m on left -> lenM on right)
+        const strip = document.createElement('div');
+        strip.className = 'linear-strip-track';
+        strip.onmousemove = (ev) => onStripMouseMove(ev);
+        strip.onmouseleave = () => onStripMouseLeave();
+
+        const arrowSymbol = ps.isForward ? '▶' : '◀';
+        const watermark = document.createElement('div');
+        watermark.className = 'strip-dir-watermark';
+        watermark.innerHTML = Array(10).fill(`<span>${arrowSymbol}</span>`).join('');
+        strip.appendChild(watermark);
+
+        const cursorLine = document.createElement('div');
+        cursorLine.className = 'strip-cursor-line';
+        strip.appendChild(cursorLine);
+
+        ps.items.forEach(item => {
+          const sMin = Math.min(item.pos0, item.pos1);
+          const sMax = Math.max(item.pos0, item.pos1);
+          const leftPct = Math.max(0, Math.min(99.5, (sMin / lenM) * 100));
+          const widthPct = Math.max(0.8, Math.min(100 - leftPct, ((sMax - sMin) / lenM) * 100));
+          const col = getRcSegmentColor(item.seg, rcMetric);
+
+          const segEl = document.createElement('div');
+          segEl.className = 'linear-strip-seg';
+          segEl.style.left = `${leftPct}%`;
+          segEl.style.width = `${widthPct}%`;
+          segEl.style.background = col;
+          const tSeg = item.seg.start ? item.seg.start.split('T')[1].split('.')[0] : '';
+          segEl.title = `[${Math.round(sMin)} m – ${Math.round(sMax)} m] • Jam ${tSeg} • ${item.seg.status} • Speed: ${item.seg.avg_speed} km/h • IRI: ${item.seg.iri} • Peak Z: ${item.seg.z_peak} m/s² (Klik untuk grafik 3-Axis)`;
+          segEl.onclick = (ev) => {
+            ev.stopPropagation();
+            openSegmentInspector(item.seg);
+          };
+          strip.appendChild(segEl);
+        });
+
+        card.appendChild(strip);
+        container.appendChild(card);
+      });
+    }
+
+    function highlightPassOnMiniMap(passIdx, isHigh) {
+      rcPassPolylines.forEach((group, idx) => {
+        group.forEach(pl => {
+          if (!isHigh) {
+            pl.setStyle({ opacity: 0.9 });
+          } else if (idx === passIdx) {
+            pl.setStyle({ opacity: 1.0, weight: 6 });
+            pl.bringToFront();
+          } else {
+            pl.setStyle({ opacity: 0.18 });
+          }
+        });
+      });
+    }
+
+    function onStripMouseMove(e) {
+      if (!currentRoadFeature || !currentRoadFeature._geomMeta) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const relX = Math.max(0, Math.min(1, (e.clientX - rect.left) / Math.max(1, rect.width)));
+      const gm = currentRoadFeature._geomMeta;
+      const posM = Math.round(relX * gm.lenM);
+
+      // Update all vertical cursor hairlines across all strips
+      document.querySelectorAll('#road-corridor-overlay .strip-cursor-line').forEach(el => {
+        el.style.display = 'block';
+        el.style.left = `${relX * 100}%`;
+      });
+
+      document.getElementById('rc-hover-pos-lbl').textContent = `📍 Posisi Kursor: ${posM} m / ${Math.round(gm.lenM)} m (${Math.round(relX * 100)}%)`;
+
+      // Move crosshair marker on mini-map along the road's curvilinear centerline
+      if (rcHoverMarker) {
+        let latLon;
+        if (gm.clSegs && gm.clSegs.length > 0) {
+          const xyM = interpolateAlongCenterlineM(relX * gm.lenM, gm.clSegs);
+          latLon = mToLatLon(xyM[0], xyM[1]);
+        } else {
+          const projVal = gm.pmin + relX * gm.lenM;
+          const xm = projVal * gm.ux + gm.nMean * gm.nx;
+          const ym = projVal * gm.uy + gm.nMean * gm.ny;
+          latLon = mToLatLon(xm, ym);
+        }
+        rcHoverMarker.setLatLng(latLon);
+        rcHoverMarker.setOpacity(1);
+      }
+    }
+
+    function onStripMouseLeave() {
+      document.querySelectorAll('#road-corridor-overlay .strip-cursor-line').forEach(el => {
+        el.style.display = 'none';
+      });
+      document.getElementById('rc-hover-pos-lbl').textContent = 'Arahkan kursor ke bar untuk melihat posisi meter & peta';
+      if (rcHoverMarker) {
+        rcHoverMarker.setOpacity(0);
+      }
+    }
+
+    // =========================================================================
+    // INTERACTIVE MAP LINE / POLYGON DRAWING TOOL FOR CUSTOM ROAD ANALYSIS
+    // =========================================================================
+    let isDrawToolOpen = false;
+    let drawMode = 'line'; // 'line' (auto-buffered polygon) or 'polygon' (manual vertices)
+    let drawPointsLatLng = []; // [[lat, lon], ...]
+    let drawPreviewGroup = null;
+
+    function toggleDrawTool() {
+      isDrawToolOpen = !isDrawToolOpen;
+      const panel = document.getElementById('draw-tool-panel');
+      const btn = document.getElementById('btn-draw-tool');
+      panel.style.display = isDrawToolOpen ? 'flex' : 'none';
+      if (btn) {
+        btn.style.background = isDrawToolOpen ? '#2563eb' : '';
+        btn.style.borderColor = isDrawToolOpen ? '#60a5fa' : '';
+        btn.style.color = isDrawToolOpen ? '#fff' : '';
+      }
+      document.getElementById('map').style.cursor = isDrawToolOpen ? 'crosshair' : '';
+      if (!drawPreviewGroup && map) {
+        drawPreviewGroup = L.layerGroup().addTo(map);
+      }
+      if (isDrawToolOpen) {
+        renderCustomRoadsList();
+        updateDrawPreview();
+      } else if (drawPreviewGroup) {
+        drawPreviewGroup.clearLayers();
+      }
+    }
+
+    function setDrawMode(mode) {
+      drawMode = mode;
+      document.getElementById('btn-mode-line').classList.toggle('active', mode === 'line');
+      document.getElementById('btn-mode-poly').classList.toggle('active', mode === 'polygon');
+      const hintEl = document.getElementById('draw-hint-box');
+      if (mode === 'line') {
+        hintEl.innerHTML = '👆 <strong>Klik titik-titik di peta</strong> mengikuti alur jalan. Garis akan otomatis membentuk <strong>Polygon Koridor Jalan</strong> sesuai lebar meter.';
+      } else {
+        hintEl.innerHTML = '👆 <strong>Klik titik sudut di peta</strong> (minimal 3 titik) untuk membentuk <strong>Polygon Manual</strong>.';
+      }
+      updateDrawPreview();
+    }
+
+    function onDrawTypeChange() {
+      const rtype = document.getElementById('draw-type-select').value;
+      const widthInput = document.getElementById('draw-width-input');
+      if (rtype === 'Jalan Raya') widthInput.value = 12;
+      else if (rtype === 'Jalan MR') widthInput.value = 9;
+      else widthInput.value = 7;
+      updateDrawPreview();
+    }
+
+    function onMapDrawClick(e) {
+      if (!isDrawToolOpen) return;
+      drawPointsLatLng.push([e.latlng.lat, e.latlng.lng]);
+      updateDrawPreview();
+    }
+
+    function undoDrawPoint() {
+      if (drawPointsLatLng.length > 0) {
+        drawPointsLatLng.pop();
+        updateDrawPreview();
+      }
+    }
+
+    function clearDrawPoints() {
+      drawPointsLatLng = [];
+      updateDrawPreview();
+    }
+
+    function bufferPolylineToPolygonM(ptsM, widthM) {
+      if (!ptsM || ptsM.length < 2) return null;
+      const halfW = Math.max(1.5, widthM / 2.0);
+      const segNormals = [];
+      for (let i = 0; i < ptsM.length - 1; i++) {
+        const dx = ptsM[i + 1][0] - ptsM[i][0];
+        const dy = ptsM[i + 1][1] - ptsM[i][1];
+        const L = Math.hypot(dx, dy) || 1.0;
+        segNormals.push([-dy / L, dx / L]);
+      }
+
+      const leftSide = [];
+      const rightSide = [];
+      for (let i = 0; i < ptsM.length; i++) {
+        let nx, ny;
+        if (i === 0) {
+          nx = segNormals[0][0];
+          ny = segNormals[0][1];
+        } else if (i === ptsM.length - 1) {
+          nx = segNormals[segNormals.length - 1][0];
+          ny = segNormals[segNormals.length - 1][1];
+        } else {
+          const n1 = segNormals[i - 1];
+          const n2 = segNormals[i];
+          let bx = n1[0] + n2[0];
+          let by = n1[1] + n2[1];
+          const bL = Math.hypot(bx, by);
+          if (bL < 1e-4) {
+            nx = n2[0]; ny = n2[1];
+          } else {
+            bx /= bL; by /= bL;
+            const dot = Math.max(0.45, bx * n2[0] + by * n2[1]);
+            const scale = Math.min(2.2, 1.0 / dot);
+            nx = bx * scale;
+            ny = by * scale;
+          }
+        }
+        leftSide.push([ptsM[i][0] + nx * halfW, ptsM[i][1] + ny * halfW]);
+        rightSide.push([ptsM[i][0] - nx * halfW, ptsM[i][1] - ny * halfW]);
+      }
+      const ringM = leftSide.concat(rightSide.reverse());
+      ringM.push([leftSide[0][0], leftSide[0][1]]);
+      return ringM;
+    }
+
+    function buildDraftRoadGeometry() {
+      const widthM = Math.max(3, Math.min(40, parseFloat(document.getElementById('draw-width-input').value) || 12));
+      if (drawMode === 'line') {
+        if (drawPointsLatLng.length < 2) return null;
+        const clDeg = drawPointsLatLng.map(ll => [Number(ll[1].toFixed(6)), Number(ll[0].toFixed(6))]);
+        const ptsM = clDeg.map(pt => lonLatToM(pt[0], pt[1]));
+        const ringM = bufferPolylineToPolygonM(ptsM, widthM);
+        if (!ringM) return null;
+        let lenM = 0;
+        for (let i = 0; i < ptsM.length - 1; i++) {
+          lenM += Math.hypot(ptsM[i + 1][0] - ptsM[i][0], ptsM[i + 1][1] - ptsM[i][1]);
+        }
+        const ringDeg = ringM.map(m => {
+          const ll = mToLonLat(m[0], m[1]);
+          return [Number(ll[0].toFixed(6)), Number(ll[1].toFixed(6))];
+        });
+        const areaM2 = lenM * widthM;
+        return {
+          ringM,
+          ringDeg,
+          clDeg,
+          ptsM,
+          lenM: Number(lenM.toFixed(1)),
+          widthM,
+          ha: Number((areaM2 / 10000.0).toFixed(4))
+        };
+      } else {
+        if (drawPointsLatLng.length < 3) return null;
+        const rawDeg = drawPointsLatLng.map(ll => [Number(ll[1].toFixed(6)), Number(ll[0].toFixed(6))]);
+        const ringDeg = rawDeg.concat([[rawDeg[0][0], rawDeg[0][1]]]);
+        const ringM = ringDeg.map(pt => lonLatToM(pt[0], pt[1]));
+        // Shoelace area
+        let area2 = 0;
+        for (let i = 0; i < ringM.length - 1; i++) {
+          area2 += ringM[i][0] * ringM[i + 1][1] - ringM[i + 1][0] * ringM[i][1];
+        }
+        const areaM2 = Math.abs(area2) / 2.0;
+        // Find furthest pair of vertices to define principal axis centerline
+        let maxD = 0, pStart = ringM[0], pEnd = ringM[1];
+        for (let i = 0; i < ringM.length - 1; i++) {
+          for (let j = i + 1; j < ringM.length - 1; j++) {
+            const d = Math.hypot(ringM[j][0] - ringM[i][0], ringM[j][1] - ringM[i][1]);
+            if (d > maxD) {
+              maxD = d;
+              pStart = ringM[i];
+              pEnd = ringM[j];
+            }
+          }
+        }
+        const clDeg = [
+          mToLonLat(pStart[0], pStart[1]).map(v => Number(v.toFixed(6))),
+          mToLonLat(pEnd[0], pEnd[1]).map(v => Number(v.toFixed(6)))
+        ];
+        const estWidth = Math.max(4, Math.round(areaM2 / Math.max(10, maxD)));
+        return {
+          ringM,
+          ringDeg,
+          clDeg,
+          ptsM: [pStart, pEnd],
+          lenM: Number(maxD.toFixed(1)),
+          widthM: estWidth,
+          ha: Number((areaM2 / 10000.0).toFixed(4))
+        };
+      }
+    }
+
+    function countMatchingSegmentsForDraft(draft) {
+      if (!draft) return 0;
+      const clBuilt = buildCenterlineSegsM(draft.clDeg, draft.ptsM[0], draft.ptsM[draft.ptsM.length - 1]);
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      draft.ringM.forEach(m => {
+        if (m[0] < minX) minX = m[0];
+        if (m[0] > maxX) maxX = m[0];
+        if (m[1] < minY) minY = m[1];
+        if (m[1] > maxY) maxY = m[1];
+      });
+      minX -= 22; maxX += 22; minY -= 22; maxY += 22;
+
+      let count = 0;
+      ALL_SURVEY_DATES.forEach(dt => {
+        const segs = allSegmentsData[dt] || [];
+        segs.forEach(seg => {
+          const c = seg.coords;
+          if (!c || c.length < 2) return;
+          const p0 = lonLatToM(c[0][1], c[0][0]);
+          const p1 = lonLatToM(c[c.length - 1][1], c[c.length - 1][0]);
+          const pm = lonLatToM(c[Math.floor(c.length / 2)][1], c[Math.floor(c.length / 2)][0]);
+          if (pm[0] < minX || pm[0] > maxX || pm[1] < minY || pm[1] > maxY) return;
+          const dPoly = pointToPolyDistM(pm[0], pm[1], [draft.ringM]);
+          if (dPoly > 20.0) return;
+          const dx = p1[0] - p0[0], dy = p1[1] - p0[1];
+          const sL = Math.hypot(dx, dy);
+          if (sL > 1.5) {
+            const clMid = projectOntoCenterlineM(pm[0], pm[1], clBuilt.clSegs);
+            const dot = Math.abs(dx * clMid.tx + dy * clMid.ty) / sL;
+            if (dot < 0.62) return;
+          }
+          count++;
+        });
+      });
+      return count;
+    }
+
+    function updateDrawPreview() {
+      if (!drawPreviewGroup) return;
+      drawPreviewGroup.clearLayers();
+
+      document.getElementById('draw-stat-pts').textContent = drawPointsLatLng.length;
+
+      // Render clicked vertex markers
+      drawPointsLatLng.forEach((ll, idx) => {
+        L.circleMarker(ll, {
+          radius: idx === 0 ? 6 : 4.5,
+          color: '#fff',
+          weight: 2,
+          fillColor: idx === 0 ? '#10b981' : '#ec4899',
+          fillOpacity: 1
+        }).bindTooltip(idx === 0 ? 'Titik Awal (0 m)' : `Titik #${idx + 1}`, { direction: 'top' }).addTo(drawPreviewGroup);
+      });
+
+      const draft = buildDraftRoadGeometry();
+      if (!draft) {
+        document.getElementById('draw-stat-len').textContent = '0 m';
+        document.getElementById('draw-stat-segs').textContent = '0 Segmen';
+        return;
+      }
+
+      // Render buffered polygon preview
+      const polyLatLngs = draft.ringDeg.map(pt => [pt[1], pt[0]]);
+      L.polygon(polyLatLngs, {
+        color: '#f472b6',
+        weight: 2.2,
+        dashArray: '6, 4',
+        fillColor: '#ec4899',
+        fillOpacity: 0.35
+      }).addTo(drawPreviewGroup);
+
+      // Render centerline preview
+      const clLatLngs = draft.clDeg.map(pt => [pt[1], pt[0]]);
+      L.polyline(clLatLngs, {
+        color: '#fde047',
+        weight: 2.5,
+        dashArray: '4, 4'
+      }).addTo(drawPreviewGroup);
+
+      const segHits = countMatchingSegmentsForDraft(draft);
+      document.getElementById('draw-stat-len').textContent = `${draft.lenM} m`;
+      document.getElementById('draw-stat-segs').textContent = `${segHits} Segmen`;
+    }
+
+    async function persistCustomRoadsToServer() {
+      try {
+        localStorage.setItem('rose_custom_roads_v1', JSON.stringify(customRoadsFeatures));
+      } catch (e) {}
+      try {
+        await fetch('/api/custom_roads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'FeatureCollection', features: customRoadsFeatures })
+        });
+      } catch (e) {
+        console.warn('Saved to localStorage; backend persistence error:', e);
+      }
+    }
+
+    async function saveAndAnalyzeCustomRoad() {
+      const draft = buildDraftRoadGeometry();
+      if (!draft) {
+        alert(drawMode === 'line' ? 'Silakan klik minimal 2 titik di sepanjang jalan pada peta.' : 'Silakan klik minimal 3 titik sudut polygon pada peta.');
+        return;
+      }
+      const nameVal = (document.getElementById('draw-name-input').value || '').trim() || `Jalan Custom ${customRoadsFeatures.length + 1}`;
+      const rtype = document.getElementById('draw-type-select').value;
+      const estateVal = document.getElementById('draw-estate-select').value;
+      const divVal = document.getElementById('draw-div-select').value;
+
+      const pStart = draft.ptsM[0];
+      const pEnd = draft.ptsM[draft.ptsM.length - 1];
+      const cL = Math.hypot(pEnd[0] - pStart[0], pEnd[1] - pStart[1]) || 1.0;
+      const ux = (pEnd[0] - pStart[0]) / cL;
+      const uy = (pEnd[1] - pStart[1]) / cL;
+      const pmin = pStart[0] * ux + pStart[1] * uy;
+
+      const newFeature = {
+        type: 'Feature',
+        properties: {
+          custom_id: 'cust_' + Date.now(),
+          is_custom: true,
+          estate: estateVal,
+          divisi: divVal,
+          blok: nameVal,
+          neighbor_blok: '-',
+          antar_blok: nameVal,
+          keterangan: rtype,
+          lebar_m: draft.widthM,
+          panjang_m: draft.lenM,
+          hectare: draft.ha,
+          ukuran: `${draft.lenM} m`,
+          axis_ux: Number(ux.toFixed(5)),
+          axis_uy: Number(uy.toFixed(5)),
+          axis_pmin: Number(pmin.toFixed(2)),
+          axis_len_m: draft.lenM,
+          centerline: draft.clDeg
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [draft.ringDeg]
+        }
+      };
+
+      customRoadsFeatures.push(newFeature);
+      await persistCustomRoadsToServer();
+
+      pmseRoadsData.features = baseRoadsFeatures.concat(customRoadsFeatures);
+      buildRoadSurveyIndex();
+      renderRoads();
+      renderCustomRoadsList();
+
+      // Clear drawing points & auto-increment default name
+      clearDrawPoints();
+      document.getElementById('draw-name-input').value = `Jalan Raya Custom ${customRoadsFeatures.length + 1}`;
+
+      // Immediately open the Road Corridor Multi-Pass Comparison Modal for the newly created road!
+      openRoadCorridorModal(newFeature);
+    }
+
+    async function deleteCustomRoad(customId) {
+      customRoadsFeatures = customRoadsFeatures.filter(f => f.properties.custom_id !== customId);
+      await persistCustomRoadsToServer();
+      pmseRoadsData.features = baseRoadsFeatures.concat(customRoadsFeatures);
+      buildRoadSurveyIndex();
+      renderRoads();
+      renderCustomRoadsList();
+    }
+
+    function renderCustomRoadsList() {
+      const listEl = document.getElementById('custom-roads-list');
+      if (!listEl || !pmseRoadsData) return;
+      listEl.innerHTML = '';
+
+      // Show both pre-built Jalan Raya outside estate AND user-created custom roads
+      const highlightRoads = (pmseRoadsData.features || []).filter(f =>
+        f.properties.is_custom || f.properties.keterangan === 'Jalan Raya'
+      );
+
+      if (highlightRoads.length === 0) {
+        listEl.innerHTML = '<div style="font-size:10px; color:#64748b; text-align:center; padding:6px;">Belum ada ruas custom</div>';
+        return;
+      }
+
+      highlightRoads.slice().reverse().forEach(f => {
+        const p = f.properties;
+        const passCnt = f._passes ? f._passes.length : 0;
+        const segCnt = f._segCount || 0;
+        const item = document.createElement('div');
+        item.className = 'custom-road-item';
+        item.innerHTML = `
+          <div style="display:flex; flex-direction:column; overflow:hidden; cursor:pointer; flex:1;" onclick="openRoadCorridorModalByRoadId(${p.road_id})">
+            <span style="font-weight:700; color:#f472b6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">🛣️ ${p.antar_blok}</span>
+            <span style="font-size:9px; color:#94a3b8;">${p.estate} • ${p.panjang_m} m • <strong style="color:#4ade80;">${passCnt} Lintasan (${segCnt} seg)</strong></span>
+          </div>
+          <div style="display:flex; gap:4px; align-items:center;">
+            <button class="time-reset-btn" style="font-size:10px; padding:2px 6px; background:#2563eb; color:#fff; border-radius:4px;" onclick="openRoadCorridorModalByRoadId(${p.road_id})">Analisa</button>
+            ${p.is_custom ? `<button class="time-reset-btn" style="font-size:10px; padding:2px 5px; color:#f87171;" onclick="deleteCustomRoad('${p.custom_id}')" title="Hapus">🗑️</button>` : ''}
+          </div>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    function openRoadCorridorModalByRoadId(roadId) {
+      if (!pmseRoadsData) return;
+      const found = pmseRoadsData.features.find(f => f.properties.road_id === roadId);
+      if (found) {
+        openRoadCorridorModal(found);
+      }
+    }
+
+    function exportCustomRoadsGeoJSON() {
+      const exportFeats = (pmseRoadsData ? pmseRoadsData.features : []).filter(f =>
+        f.properties.is_custom || f.properties.keterangan === 'Jalan Raya'
+      ).map(f => ({
+        type: 'Feature',
+        properties: f.properties,
+        geometry: f.geometry
+      }));
+      const blob = new Blob([JSON.stringify({ type: 'FeatureCollection', features: exportFeats }, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'jalan_raya_dan_custom_polygons.geojson';
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
     function syncDateSelectionUI() {
@@ -1674,6 +3877,18 @@
       return '#3b82f6';
     }
 
+    function filterEstate(est) {
+      selectedEstate = est;
+      document.querySelectorAll('#estate-chips .chip').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-estate') === est);
+      });
+
+      renderBlocks();
+      renderRoads();
+      renderTracks();
+      updateStatsUI();
+    }
+
     function filterDivision(div) {
       selectedDivision = div;
       document.querySelectorAll('#division-chips .chip').forEach(c => {
@@ -1681,6 +3896,7 @@
       });
 
       renderBlocks();
+      renderRoads();
       renderTracks();
       updateStatsUI();
     }
@@ -1710,6 +3926,16 @@
         if (c === 'ORANGE' && !allowSedang) return false;
         if (c === 'RED' && !allowBerat) return false;
 
+        // Filter by Estate
+        if (selectedEstate !== 'all') {
+          const segEst = seg.estate || (seg.divisi === 'LUAR BLOK' ? 'LUAR KEBUN' : 'PMSE');
+          if (selectedEstate === 'LUAR KEBUN') {
+            if (seg.divisi !== 'LUAR BLOK' && segEst !== 'LUAR KEBUN') return false;
+          } else if (segEst !== selectedEstate) {
+            return false;
+          }
+        }
+
         // Filter by Division
         if (selectedDivision !== 'all' && seg.divisi !== selectedDivision) {
           return false;
@@ -1717,7 +3943,7 @@
 
         // Filter by Block search query if non-empty
         if (blockFilterQuery) {
-          const b = (seg.blok || '').toLowerCase();
+          const b = `${seg.blok || ''} ${seg.estate || ''}`.toLowerCase();
           if (!b.includes(blockFilterQuery)) return false;
         }
 
@@ -1756,12 +3982,13 @@
           polyline.setStyle({ weight: seg.color === 'RED' ? 4.5 : 3.5, opacity: 0.9 });
         });
 
-        polyline.on('click', () => {
+        polyline.on('click', (e) => {
+          if (isDrawToolOpen) return;
           openSegmentInspector(seg);
         });
 
         const timeLabel = seg.start ? seg.start.replace('T', ' ').split('.')[0] : '-';
-        const locLabel = seg.blok ? `Blok ${seg.blok} • ${seg.divisi}` : '';
+        const locLabel = seg.blok ? `Blok ${seg.blok} • ${seg.divisi} • ${seg.estate || 'PMSE'}` : '';
         polyline.bindTooltip(`
           <div style="font-weight:700;">${seg.file}</div>
           <div style="color:#94a3b8; font-size:10px;">🕒 ${timeLabel}</div>
@@ -1781,7 +4008,7 @@
 
       document.getElementById('insp-file').textContent = seg.file;
       document.getElementById('insp-time').textContent = seg.start ? seg.start.replace('T', ' ') : '-';
-      document.getElementById('insp-location').textContent = `📍 Blok ${seg.blok || '-'} • ${seg.divisi || '-'}`;
+      document.getElementById('insp-location').textContent = `📍 Blok ${seg.blok || '-'} • ${seg.divisi || '-'} • ${seg.estate || 'PMSE'}`;
       document.getElementById('insp-zpeak').textContent = `Peak Z: ${seg.z_peak || 0} m/s²`;
       document.getElementById('insp-dist').textContent = `${seg.dist} m`;
       document.getElementById('insp-avg-spd').textContent = `${seg.avg_speed} km/h`;
@@ -1989,6 +4216,8 @@
     function handleBlockSearch(e) {
       const query = e.target.value.trim().toLowerCase();
       blockFilterQuery = query;
+      renderBlocks();
+      renderRoads();
       renderTracks();
       updateStatsUI();
 

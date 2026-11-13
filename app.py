@@ -31,8 +31,60 @@ class RoseAppHandler(SimpleHTTPRequestHandler):
             self.handle_video_stream()
             return
 
+        # API: Get Custom User-Drawn Roads/Polygons
+        if path == '/api/custom_roads':
+            self.handle_get_custom_roads()
+            return
+
         # Default static file handling
         return super().do_GET()
+
+    def do_POST(self):
+        parsed = urllib.parse.urlparse(self.path)
+        path = parsed.path
+        if path == '/api/custom_roads':
+            self.handle_save_custom_roads()
+            return
+        self.send_error(404, "Endpoint not found")
+
+    def handle_get_custom_roads(self):
+        custom_path = os.path.join(WEB_DIR, 'data', 'custom_roads.json')
+        data = {"type": "FeatureCollection", "features": []}
+        if os.path.exists(custom_path):
+            try:
+                with open(custom_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+            except Exception:
+                pass
+        resp = json.dumps(data).encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Length', str(len(resp)))
+        self.send_header('Cache-Control', 'no-store')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        self.wfile.write(resp)
+
+    def handle_save_custom_roads(self):
+        try:
+            length = int(self.headers.get('Content-Length', '0'))
+            raw = self.rfile.read(length).decode('utf-8') if length > 0 else '{}'
+            payload = json.loads(raw)
+            features = payload.get('features', []) if isinstance(payload, dict) else []
+            out_data = {"type": "FeatureCollection", "features": features}
+            custom_path = os.path.join(WEB_DIR, 'data', 'custom_roads.json')
+            os.makedirs(os.path.dirname(custom_path), exist_ok=True)
+            with open(custom_path, 'w', encoding='utf-8') as f:
+                json.dump(out_data, f, separators=(',', ':'))
+            resp = json.dumps({"ok": True, "count": len(features)}).encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(resp)))
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(resp)
+        except Exception as e:
+            self.send_error(500, f"Error saving custom roads: {str(e)}")
 
     def handle_segment_detail(self, query):
         date_param = query.get('date', ['20261103'])[0]
@@ -45,7 +97,7 @@ class RoseAppHandler(SimpleHTTPRequestHandler):
         # Locate txt file
         # Folder mapping for 03, 04, 05, 06 Nov 2026
         folder_map = {
-            '20261103': 'Accelerometer Data - 23000988_20261103-20261103 A27',
+            '20261103': 'Accelerometer Data - 23000889_20261103-20261103',
             '20261104': 'Accelerometer Data - 23000988_20261104-20261104 A27',
             '20261105': 'Accelerometer Data - 23000988_20261105-20261105',
             '20261106': 'Accelerometer Data - 23000988_20261106-20261106'
@@ -54,31 +106,43 @@ class RoseAppHandler(SimpleHTTPRequestHandler):
         # Strip extension if needed for subdir
         subdir_name = os.path.splitext(file_param)[0]
 
-        # Infer date from filename if possible (e.g. 23000988-20261105092607.txt -> 20261105)
+        # Infer date from filename if possible (e.g. 23000889-20261103143510.txt -> 20261103)
         if '-' in subdir_name and len(subdir_name.split('-')[1]) >= 8:
             inferred_date = subdir_name.split('-')[1][:8]
             if inferred_date in folder_map:
                 date_param = inferred_date
 
         target_folder_name = folder_map.get(date_param)
+        search_roots = [
+            ROSE_DIR,
+            os.path.dirname(BASE_DIR),
+            os.path.dirname(os.path.dirname(BASE_DIR)),
+            BASE_DIR
+        ]
 
         candidate_path = None
         if target_folder_name:
-            p = os.path.join(ROSE_DIR, target_folder_name, subdir_name, file_param)
-            if os.path.exists(p):
-                candidate_path = p
-
-        # If not found directly, search all mapped folders and any Accelerometer Data folders in ROSE_DIR
-        if not candidate_path:
-            search_folders = list(folder_map.values())
-            if os.path.exists(ROSE_DIR):
-                for entry in os.listdir(ROSE_DIR):
-                    if entry.startswith('Accelerometer Data') and entry not in search_folders:
-                        search_folders.append(entry)
-            for fld in search_folders:
-                p = os.path.join(ROSE_DIR, fld, subdir_name, file_param)
+            for root_dir in search_roots:
+                p = os.path.join(root_dir, target_folder_name, subdir_name, file_param)
                 if os.path.exists(p):
                     candidate_path = p
+                    break
+
+        # If not found directly, search all mapped folders and any Accelerometer Data folders in search_roots
+        if not candidate_path:
+            for root_dir in search_roots:
+                if not os.path.exists(root_dir):
+                    continue
+                search_folders = list(folder_map.values())
+                for entry in os.listdir(root_dir):
+                    if entry.startswith('Accelerometer Data') and entry not in search_folders:
+                        search_folders.append(entry)
+                for fld in search_folders:
+                    p = os.path.join(root_dir, fld, subdir_name, file_param)
+                    if os.path.exists(p):
+                        candidate_path = p
+                        break
+                if candidate_path:
                     break
 
         if not candidate_path or not os.path.exists(candidate_path):

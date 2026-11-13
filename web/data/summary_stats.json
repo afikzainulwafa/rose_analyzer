@@ -1,24 +1,24 @@
 {
   "run_20261103": {
     "name": "03 Nov 2026",
-    "total_segments": 1317,
-    "total_distance_km": 30.52,
+    "total_segments": 1319,
+    "total_distance_km": 30.58,
     "avg_speed": 23.4,
-    "max_speed": 41.8,
-    "avg_iri": 5.28,
+    "max_speed": 41.9,
+    "avg_iri": 1.7,
     "status_counts": {
-      "Normal (0)": 232,
-      "Rusak Ringan (3)": 141,
-      "Rusak Berat (2)": 749,
-      "Rusak Sedang (1)": 195
+      "Normal (0)": 195,
+      "Rusak Ringan (3)": 745,
+      "Rusak Sedang (1)": 299,
+      "Rusak Berat (2)": 80
     },
     "color_counts": {
-      "GREEN": 232,
-      "YELLOW": 141,
-      "RED": 749,
-      "ORANGE": 195
+      "GREEN": 195,
+      "YELLOW": 745,
+      "ORANGE": 299,
+      "RED": 80
     },
-    "severe_damage_count": 749
+    "severe_damage_count": 80
   },
   "run_20261104": {
     "name": "04 Nov 2026",
@@ -85,23 +85,23 @@
   },
   "combined": {
     "name": "All Surveys (03-06 Nov 2026)",
-    "total_segments": 7131,
-    "total_distance_km": 165.98,
+    "total_segments": 7133,
+    "total_distance_km": 166.05,
     "avg_speed": 23.0,
     "max_speed": 75.7,
-    "avg_iri": 2.05,
+    "avg_iri": 1.39,
     "status_counts": {
-      "Normal (0)": 2529,
-      "Rusak Ringan (3)": 3011,
-      "Rusak Berat (2)": 804,
-      "Rusak Sedang (1)": 787
+      "Normal (0)": 2492,
+      "Rusak Ringan (3)": 3615,
+      "Rusak Sedang (1)": 891,
+      "Rusak Berat (2)": 135
     },
     "color_counts": {
-      "GREEN": 2529,
-      "YELLOW": 3011,
-      "RED": 804,
-      "ORANGE": 787
+      "GREEN": 2492,
+      "YELLOW": 3615,
+      "ORANGE": 891,
+      "RED": 135
     },
-    "severe_damage_count": 804
+    "severe_damage_count": 135
   }
 }
