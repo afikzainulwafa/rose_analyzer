@@ -6,6 +6,7 @@ import webbrowser
 import subprocess
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 import urllib.parse
+import video_manager
 
 PORT = 8088
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -26,9 +27,34 @@ class RoseAppHandler(SimpleHTTPRequestHandler):
             self.handle_segment_detail(query)
             return
 
-        # API: Video Streaming
-        if path == '/video/survey':
-            self.handle_video_stream()
+        # API: Video Streaming (supports date & file query parameters)
+        if path in ('/video/survey', '/video/stream'):
+            self.handle_video_stream(query)
+            return
+
+        # API: Video metadata endpoints
+        if path == '/api/video_dates':
+            self.send_json(video_manager.get_available_video_dates())
+            return
+
+        if path == '/api/videos':
+            date_param = query.get('date', ['20261104'])[0]
+            self.send_json(video_manager.list_videos_for_date(date_param))
+            return
+
+        if path == '/api/match_segment':
+            date_param = query.get('date', ['20261104'])[0]
+            ts_param = query.get('timestamp', [''])[0]
+            self.send_json(video_manager.match_segment_to_video(date_param, ts_param))
+            return
+
+        if path == '/api/groundtruth':
+            date_param = query.get('date', ['20261104'])[0]
+            self.send_json(video_manager.load_groundtruth(date_param))
+            return
+
+        if path == '/api/video_settings':
+            self.send_json(video_manager.load_video_settings())
             return
 
         # API: Get Custom User-Drawn Roads/Polygons
@@ -42,10 +68,48 @@ class RoseAppHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
+        query = urllib.parse.parse_qs(parsed.query)
         if path == '/api/custom_roads':
             self.handle_save_custom_roads()
             return
+        if path == '/api/groundtruth':
+            self.handle_save_groundtruth(query)
+            return
+        if path == '/api/video_settings':
+            self.handle_save_video_settings()
+            return
         self.send_error(404, "Endpoint not found")
+
+    def send_json(self, data, status=200):
+        resp = json.dumps(data).encode('utf-8')
+        self.send_response(status)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Length', str(len(resp)))
+        self.send_header('Cache-Control', 'no-store')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        self.wfile.write(resp)
+
+    def handle_save_groundtruth(self, query):
+        try:
+            date_param = query.get('date', ['20261104'])[0]
+            length = int(self.headers.get('Content-Length', '0'))
+            raw = self.rfile.read(length).decode('utf-8') if length > 0 else '[]'
+            payload = json.loads(raw)
+            ok = video_manager.save_groundtruth(date_param, payload)
+            self.send_json({"ok": ok, "count": len(payload) if isinstance(payload, list) else 0})
+        except Exception as e:
+            self.send_error(500, f"Error saving ground truth: {str(e)}")
+
+    def handle_save_video_settings(self):
+        try:
+            length = int(self.headers.get('Content-Length', '0'))
+            raw = self.rfile.read(length).decode('utf-8') if length > 0 else '{}'
+            payload = json.loads(raw)
+            ok = video_manager.save_video_settings(payload)
+            self.send_json({"ok": ok})
+        except Exception as e:
+            self.send_error(500, f"Error saving video settings: {str(e)}")
 
     def handle_get_custom_roads(self):
         custom_path = os.path.join(WEB_DIR, 'data', 'custom_roads.json')
@@ -162,21 +226,33 @@ class RoseAppHandler(SimpleHTTPRequestHandler):
         except Exception as e:
             self.send_error(500, f"Error reading segment file: {str(e)}")
 
-    def handle_video_stream(self):
-        video_path = os.path.join(ROSE_DIR, 'Video', '04 Nov 2026', '20261104_111115.mp4')
-        if not os.path.exists(video_path):
-            self.send_error(404, "Survey video file not found")
-            return
+    def handle_video_stream(self, query=None):
+        query = query or {}
+        date_param = query.get('date', ['20261104'])[0]
+        file_param = query.get('file', [''])[0]
+
+        video_path = video_manager.resolve_video_file(date_param, file_param)
+        if not video_path or not os.path.exists(video_path):
+            # Legacy fallback
+            fallback = os.path.join(ROSE_DIR, 'Video', '04 Nov 2026', '20261104_111115.mp4')
+            if os.path.exists(fallback):
+                video_path = fallback
+            else:
+                self.send_error(404, f"Survey video file not found (date={date_param}, file={file_param})")
+                return
 
         size = os.path.getsize(video_path)
         range_header = self.headers.get('Range')
 
         if range_header:
-            # Handle HTTP Range requests for video seeking
             try:
                 ranges = range_header.replace('bytes=', '').split('-')
-                start = int(ranges[0])
-                end = int(ranges[1]) if ranges[1] else min(start + 2*1024*1024, size - 1)
+                start = int(ranges[0]) if ranges[0] else 0
+                end = int(ranges[1]) if len(ranges) > 1 and ranges[1] else min(start + 4*1024*1024, size - 1)
+                if start >= size:
+                    self.send_error(416, "Requested Range Not Satisfiable")
+                    return
+                end = min(end, size - 1)
                 chunk_len = end - start + 1
 
                 self.send_response(206)
@@ -184,11 +260,22 @@ class RoseAppHandler(SimpleHTTPRequestHandler):
                 self.send_header('Content-Range', f'bytes {start}-{end}/{size}')
                 self.send_header('Content-Length', str(chunk_len))
                 self.send_header('Accept-Ranges', 'bytes')
+                self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
 
                 with open(video_path, 'rb') as f:
                     f.seek(start)
-                    self.wfile.write(f.read(chunk_len))
+                    remaining = chunk_len
+                    while remaining > 0:
+                        read_size = min(1024 * 1024, remaining)
+                        data = f.read(read_size)
+                        if not data:
+                            break
+                        try:
+                            self.wfile.write(data)
+                        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                            break
+                        remaining -= len(data)
                 return
             except Exception:
                 pass
@@ -198,12 +285,13 @@ class RoseAppHandler(SimpleHTTPRequestHandler):
         self.send_header('Content-Type', 'video/mp4')
         self.send_header('Content-Length', str(size))
         self.send_header('Accept-Ranges', 'bytes')
+        self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
         with open(video_path, 'rb') as f:
             while chunk := f.read(1024*1024):
                 try:
                     self.wfile.write(chunk)
-                except BrokenPipeError:
+                except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                     break
 
 

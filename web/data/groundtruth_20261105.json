@@ -1,0 +1,31 @@
+[
+  {
+    "id": "gt_1794571013406_596",
+    "date": "20261105",
+    "timestamp": "2026-11-05 11:02:12",
+    "wall_ms": 1793851332600,
+    "video_file": "20261105_105821.mp4",
+    "video_sec": 231.6,
+    "segment_file": "23000988-20261105110213.txt",
+    "segment_idx": 1032,
+    "sensor_status": "Rusak Ringan (3)",
+    "sensor_iri": 1.6,
+    "sensor_speed": 11.6,
+    "visual_condition": "Normal",
+    "sub_conditions": [],
+    "tags": [],
+    "other_sub_condition": "",
+    "note": "",
+    "block_id": null,
+    "divisi": null,
+    "estate": null,
+    "block": "Di luar / Perbatasan Blok",
+    "lat": 1.016142,
+    "lng": 116.909794,
+    "coordinates": [
+      1.016142,
+      116.909794
+    ],
+    "updated_at": "2026-11-13T11:57:03.797Z"
+  }
+]

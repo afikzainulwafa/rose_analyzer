@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RoSe - Video Ground-Truth & Playback Sync</title>
+  <link rel="stylesheet" href="static/leaflet.css" />
+  <style>
+    :root {
+      --bg-dark: #0b1120;
+      --bg-card: #151e32;
+      --bg-panel: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --orange: #f97316;
+      --red: #ef4444;
+      --cyan: #06b6d4;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top Bar */
+    header {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .brand h1 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    select, button, input[type="text"] {
+      background: var(--bg-panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 12px;
+      outline: none;
+    }
+
+    select:focus, input[type="text"]:focus {
+      border-color: var(--primary);
+    }
+
+    button {
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-weight: 500;
+    }
+
+    button:hover {
+      background: #2d3b4e;
+    }
+
+    button.btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    button.btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    button.btn-active {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: var(--primary);
+      color: #93c5fd;
+    }
+
+    a.nav-link {
+      color: #93c5fd;
+      text-decoration: none;
+      font-size: 12px;
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-panel);
+    }
+
+    a.nav-link:hover {
+      background: #2d3b4e;
+    }
+
+    /* Main Split Layout */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    @media (max-width: 1024px) {
+      main {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+      }
+    }
+
+    /* Left Map Pane */
+    #map-pane {
+      position: relative;
+      border-right: 1px solid var(--border);
+      min-height: 0;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      background: #0f172a;
+    }
+
+    .map-overlay-top {
+      position: absolute;
+      top: 10px;
+      left: 50px;
+      z-index: 800;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      pointer-events: auto;
+    }
+
+    .map-pill {
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(6px);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .map-legend {
+      position: absolute;
+      bottom: 16px;
+      left: 12px;
+      z-index: 800;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 11px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* Block tooltip styling */
+    .block-label-tooltip {
+      background: rgba(15, 23, 42, 0.72) !important;
+      border: 1px solid rgba(148, 163, 184, 0.4) !important;
+      color: #e2e8f0 !important;
+      font-size: 10px !important;
+      font-weight: 600 !important;
+      padding: 1px 5px !important;
+      border-radius: 3px !important;
+      box-shadow: none !important;
+    }
+
+    /* Right Video & Ground Truth Pane */
+    #gt-pane {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-card);
+      overflow-y: auto;
+      padding: 12px;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .video-wrapper {
+      position: relative;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    video {
+      width: 100%;
+      max-height: 36vh;
+      display: block;
+      background: #000;
+      cursor: pointer;
+    }
+
+    .video-wrapper:fullscreen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+
+    .video-wrapper:fullscreen video {
+      max-height: 100vh;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .seek-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-panel);
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .seek-bar-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--primary);
+      cursor: pointer;
+      height: 5px;
+    }
+
+    .seek-time {
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--text-muted);
+      min-width: 82px;
+    }
+
+    .video-hud {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.72);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: monospace;
+      pointer-events: none;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .video-controls-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: var(--bg-panel);
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .transport-btns {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .speed-btns {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .speed-btn {
+      padding: 3px 7px;
+      font-size: 11px;
+    }
+
+    .speed-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* Live Telemetry Card */
+    .card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .metric-box {
+      background: var(--bg-dark);
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid #263147;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .metric-value {
+      font-size: 14px;
+      font-weight: 700;
+      font-family: monospace;
+    }
+
+    .block-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .status-badge {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    /* Ground Truth Annotation Form */
+    .gt-options {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .gt-cond-btn {
+      flex: 1;
+      min-width: 90px;
+      padding: 6px 8px;
+      font-size: 11px;
+      text-align: center;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-dark);
+    }
+
+    .gt-cond-btn.selected[data-val="Normal"] { background: rgba(34, 197, 94, 0.25); border-color: var(--green); color: #86efac; }
+    .gt-cond-btn.selected[data-val="Rusak Ringan"] { background: rgba(234, 179, 8, 0.25); border-color: var(--yellow); color: #fde047; }
+    .gt-cond-btn.selected[data-val="Rusak Sedang"] { background: rgba(249, 115, 22, 0.25); border-color: var(--orange); color: #fdba74; }
+    .gt-cond-btn.selected[data-val="Rusak Berat"] { background: rgba(239, 68, 68, 0.25); border-color: var(--red); color: #fca5a5; }
+
+    .tag-chip {
+      padding: 3px 8px;
+      font-size: 11px;
+      border-radius: 12px;
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .tag-chip.selected {
+      background: rgba(59, 130, 246, 0.25);
+      border-color: var(--primary);
+      color: #93c5fd;
+    }
+
+    .gt-note-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .gt-note-row input {
+      flex: 1;
+    }
+
+    /* Ground Truth Log List */
+    .gt-log-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .gt-log-item {
+      background: var(--bg-dark);
+      border: 1px solid #263147;
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 11px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .gt-log-item:hover {
+      border-color: var(--primary);
+    }
+
+    .gt-log-meta {
+      color: var(--text-muted);
+      font-size: 10px;
+      margin-top: 2px;
+    }
+
+    .btn-del {
+      background: transparent;
+      border: none;
+      color: #ef4444;
+      font-size: 12px;
+      padding: 2px 5px;
+    }
+
+    /* Pulsing Car Marker */
+    .car-marker-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .car-dot {
+      width: 16px;
+      height: 16px;
+      background: #06b6d4;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.9);
+      animation: pulse 1.4s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.8); }
+      70% { box-shadow: 0 0 0 12px rgba(6, 182, 212, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-badge">RoSe GT</span>
+    <h1>Video Playback &amp; Ground-Truth Sync</h1>
+  </div>
+
+  <div class="controls-bar">
+    <div class="control-group">
+      <label for="dateSelect">Date:</label>
+      <select id="dateSelect"></select>
+    </div>
+    <div class="control-group">
+      <label for="videoSelect">Video Chunk:</label>
+      <select id="videoSelect" style="min-width: 240px;"></select>
+    </div>
+    <button id="btnAutoFollow" class="btn-active" title="Center map on vehicle during playback">📍 Follow Car: ON</button>
+    <button id="btnToggleBlocks" class="btn-active" title="Show/Hide Estate Blocks (Kotak-Kotak)">🟩 Blok: ON</button>
+    <a href="index.html" class="nav-link">⬅ Main Dashboard</a>
+  </div>
+</header>
+
+<main>
+  <!-- Left: Map with Blocks & Road Segments -->
+  <div id="map-pane">
+    <div id="map"></div>
+    <div class="map-overlay-top">
+      <div class="map-pill">
+        <span>Basemap:</span>
+        <select id="basemapSelect" style="padding: 2px 6px; font-size: 11px;">
+          <option value="satellite">Satellite</option>
+          <option value="dark">Dark</option>
+          <option value="osm">OpenStreetMap</option>
+        </select>
+      </div>
+      <div class="map-pill" id="segmentCountPill">Loading segments...</div>
+    </div>
+
+    <div class="map-legend">
+      <div class="legend-item"><span class="dot" style="background: var(--green);"></span> Normal</div>
+      <div class="legend-item"><span class="dot" style="background: var(--yellow);"></span> Rusak Ringan</div>
+      <div class="legend-item"><span class="dot" style="background: var(--orange);"></span> Rusak Sedang</div>
+      <div class="legend-item"><span class="dot" style="background: var(--red);"></span> Rusak Berat</div>
+      <div class="legend-item"><span class="dot" style="background: #06b6d4; border: 2px solid #fff;"></span> Posisi Video</div>
+    </div>
+  </div>
+
+  <!-- Right: Video Player, Telemetry, and Ground-Truth Annotation -->
+  <div id="gt-pane">
+    <div class="video-wrapper" id="videoWrapper">
+      <video id="gtVideo" preload="metadata" onclick="togglePlay()" ondblclick="toggleFullscreen()"></video>
+      <div class="video-hud" id="videoHud">
+        --:--:-- | Waiting for video...
+      </div>
+    </div>
+
+    <div class="seek-bar-row">
+      <span class="seek-time" id="seekTimeDisplay">00:00 / 00:00</span>
+      <input type="range" id="videoSeekBar" min="0" max="100" value="0" step="0.1" oninput="onSeekBarInput(this.value)">
+      <button onclick="toggleMute()" id="btnMute" title="Mute / Unmute">🔊</button>
+      <button onclick="toggleFullscreen()" title="Fullscreen (F)">⛶ Fullscreen</button>
+    </div>
+
+    <div class="video-controls-bar">
+      <div class="transport-btns">
+        <button onclick="seekRelative(-10)" title="Back 10s">⏪ -10s</button>
+        <button onclick="seekRelative(-3)" title="Back 3s (Left Arrow)">◀ -3s</button>
+        <button onclick="togglePlay()" id="btnPlayPause" class="btn-primary">▶ Play</button>
+        <button onclick="seekRelative(3)" title="Forward 3s (Right Arrow)">+3s ▶</button>
+        <button onclick="seekRelative(10)" title="Forward 10s">+10s ⏩</button>
+      </div>
+      <div class="speed-btns">
+        <span style="font-size:11px; color:var(--text-muted); margin-right:3px;">Speed:</span>
+        <button class="speed-btn" onclick="setSpeed(0.5, this)">0.5x</button>
+        <button class="speed-btn active" onclick="setSpeed(1.0, this)">1x</button>
+        <button class="speed-btn" onclick="setSpeed(1.5, this)">1.5x</button>
+        <button class="speed-btn" onclick="setSpeed(2.0, this)">2x</button>
+      </div>
+      <div class="speed-btns" id="rotateBtns">
+        <span style="font-size:11px; color:var(--text-muted); margin-right:3px;">Rotate:</span>
+        <button class="speed-btn rotate-btn active" data-deg="0" onclick="setVideoRotation(0)">0°</button>
+        <button class="speed-btn rotate-btn" data-deg="90" onclick="setVideoRotation(90)">90°</button>
+        <button class="speed-btn rotate-btn" data-deg="180" onclick="setVideoRotation(180)">180°</button>
+        <button class="speed-btn rotate-btn" data-deg="-90" onclick="setVideoRotation(-90)">-90°</button>
+      </div>
+    </div>
+
+    <!-- Telemetry & Estate Block Info -->
+    <div class="card">
+      <div class="card-header">
+        <span>Live Telemetry &amp; Block Context</span>
+        <span id="sensorBadge" class="status-badge" style="background: #475569;">No Segment</span>
+      </div>
+
+      <div class="block-banner">
+        <span>🟩 <strong>Lokasi Blok:</strong> <span id="activeBlockText">Menunggu GPS...</span></span>
+        <span id="activeFileText" style="font-family: monospace; color: var(--text-muted); font-size: 11px;">-</span>
+      </div>
+
+      <div class="telemetry-grid">
+        <div class="metric-box">
+          <div class="metric-label">IRI (m/km)</div>
+          <div class="metric-value" id="valIri">-</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Avg Speed</div>
+          <div class="metric-value" id="valSpeed">-</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Distance</div>
+          <div class="metric-value" id="valDist">-</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">GPS Coord</div>
+          <div class="metric-value" id="valCoord" style="font-size: 11px;">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ground-Truth Tagging Card -->
+    <div class="card">
+      <div class="card-header">
+        <span>Ground-Truth Validation (Visual vs Sensor)</span>
+        <span id="gtSaveStatus" style="font-size: 10px; color: #38bdf8; text-transform: none; font-weight: 500;">Auto-save aktif</span>
+      </div>
+
+      <div class="gt-options" id="gtCondButtons">
+        <button class="gt-cond-btn selected" data-val="Normal" onclick="selectGtCond(this)">🟢 Normal / Baik</button>
+        <button class="gt-cond-btn" data-val="Rusak Ringan" onclick="selectGtCond(this)">🟡 Rusak Ringan</button>
+        <button class="gt-cond-btn" data-val="Rusak Sedang" onclick="selectGtCond(this)">🟠 Rusak Sedang</button>
+        <button class="gt-cond-btn" data-val="Rusak Berat" onclick="selectGtCond(this)">🔴 Rusak Berat</button>
+      </div>
+
+      <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.4px;">Sub-Kondisi (klik langsung tersimpan):</div>
+      <div class="gt-options" id="gtTagChips">
+        <button class="tag-chip" onclick="toggleSubCondition(this)">Kena Lubang</button>
+        <button class="tag-chip" onclick="toggleSubCondition(this)">Lubang Tapi Menghindar</button>
+        <button class="tag-chip" onclick="toggleSubCondition(this)">Jalan Berbatu Kasar</button>
+        <button class="tag-chip" onclick="toggleSubCondition(this)">Jalan Berbatu Besar</button>
+        <button class="tag-chip" onclick="toggleSubCondition(this)">Tanjakan Kasar</button>
+        <button class="tag-chip" onclick="toggleSubCondition(this)">Tanjakan Halus</button>
+        <button class="tag-chip" onclick="toggleSubCondition(this)">Turunan Kasar</button>
+        <button class="tag-chip" onclick="toggleSubCondition(this)">Turunan Halus</button>
+        <button class="tag-chip" id="btnOtherSub" onclick="toggleOtherSubCondition(this)">Lain-lain...</button>
+      </div>
+
+      <div class="gt-note-row" id="otherSubRow" style="display:none; margin-bottom:6px;">
+        <input type="text" id="gtOtherSubInput" placeholder="Ketik sub-kondisi lain (tekan Enter / Simpan)..." onkeydown="if(event.key==='Enter') saveGroundTruth(true)">
+      </div>
+
+      <div class="gt-note-row">
+        <input type="text" id="gtNoteInput" placeholder="Catatan tambahan lapangan (opsional)..." onkeydown="if(event.key==='Enter') saveGroundTruth(true)">
+        <button class="btn-primary" onclick="saveGroundTruth(true)">💾 Simpan Baru</button>
+      </div>
+    </div>
+
+    <!-- Saved Ground-Truth Log -->
+    <div class="card">
+      <div class="card-header">
+        <span>Catatan Ground-Truth (<span id="gtCount">0</span>)</span>
+        <button onclick="exportGroundTruthCSV()" style="padding: 2px 8px; font-size: 11px;">⬇ Export CSV</button>
+      </div>
+      <div class="gt-log-list" id="gtLogList">
+        <div style="color: var(--text-muted); font-size: 11px; text-align: center; padding: 10px;">
+          Belum ada catatan ground-truth untuk tanggal ini.
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="static/leaflet.js"></script>
+<script>
+  // State
+  let map;
+  let basemapLayers = {};
+  let currentBasemap = null;
+  let blocksLayer = null;
+  let segmentsLayer = null;
+  let gtMarkersLayer = null;
+  let activeHighlightLayer = null;
+  let carMarker = null;
+
+  let blocksGeoJson = null;
+  let currentSegments = []; // Array of segment objects with parsed timestamps
+  let currentVideos = [];   // Array of video metadata objects
+  let currentDate = '20261104';
+  let activeVideo = null;
+  let activeSegment = null;
+  let currentCarLatLng = null;
+
+  let autoFollowCar = true;
+  let showBlocks = true;
+  let selectedGtCondition = 'Normal';
+  let groundTruthList = [];
+  let videoSettings = {};
+  let currentRotation = 0;
+  let activeBlockProps = null;
+
+  const COLOR_MAP = {
+    'GREEN': '#22c55e',
+    'YELLOW': '#eab308',
+    'ORANGE': '#f97316',
+    'RED': '#ef4444'
+  };
+
+  // Initialize Map
+  function initMap() {
+    map = L.map('map', {
+      center: [1.015, 116.955],
+      zoom: 15,
+      preferCanvas: true
+    });
+
+    basemapLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      attribution: 'Esri Satellite'
+    });
+    basemapLayers.dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      attribution: 'CartoDB Dark'
+    });
+    basemapLayers.osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: 'OpenStreetMap'
+    });
+
+    currentBasemap = basemapLayers.satellite.addTo(map);
+
+    blocksLayer = L.layerGroup().addTo(map);
+    segmentsLayer = L.layerGroup().addTo(map);
+    activeHighlightLayer = L.layerGroup().addTo(map);
+    gtMarkersLayer = L.layerGroup().addTo(map);
+
+    // Car Marker
+    const carIcon = L.divIcon({
+      className: 'car-marker-icon',
+      html: '<div class="car-dot"></div>',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
+    });
+    carMarker = L.marker([1.015, 116.955], { icon: carIcon, zIndexOffset: 1000 });
+
+    document.getElementById('basemapSelect').addEventListener('change', (e) => {
+      if (currentBasemap) map.removeLayer(currentBasemap);
+      currentBasemap = basemapLayers[e.target.value].addTo(map);
+    });
+  }
+
+  // Load Estate Blocks (Kotak-kotak)
+  async function loadBlocks() {
+    try {
+      const resp = await fetch('data/pmse_blocks.json');
+      blocksGeoJson = await resp.json();
+      renderBlocks();
+    } catch (err) {
+      console.error('Failed to load pmse_blocks.json:', err);
+    }
+  }
+
+  function renderBlocks() {
+    blocksLayer.clearLayers();
+    if (!blocksGeoJson || !showBlocks) return;
+
+    const geoLayer = L.geoJSON(blocksGeoJson, {
+      style: {
+        color: '#38bdf8',
+        weight: 1.2,
+        opacity: 0.65,
+        fillColor: '#0284c7',
+        fillOpacity: 0.08
+      },
+      onEachFeature: (feature, layer) => {
+        const p = feature.properties || {};
+        const label = p.blok || '';
+        if (label) {
+          layer.bindTooltip(label, {
+            permanent: true,
+            direction: 'center',
+            className: 'block-label-tooltip'
+          });
+        }
+        layer.bindPopup(`
+          <div style="font-size:12px; color:#0f172a;">
+            <strong>Blok ${p.blok || '-'}</strong><br>
+            Divisi: ${p.divisi || '-'}<br>
+            Estate: ${p.estate || '-'}<br>
+            Luas: ${p.ukuran || '-'}
+          </div>
+        `);
+      }
+    });
+    geoLayer.addTo(blocksLayer);
+  }
+
+  // Ray-casting Point-in-Polygon check
+  function pointInRing(pt, ring) {
+    // pt = [lng, lat], ring = [[lng, lat], ...]
+    let x = pt[0], y = pt[1];
+    let inside = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      let xi = ring[i][0], yi = ring[i][1];
+      let xj = ring[j][0], yj = ring[j][1];
+      let intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / ((yj - yi) || 1e-12) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  function findBlockForLatLng(lat, lng) {
+    if (!blocksGeoJson || !blocksGeoJson.features) return null;
+    const pt = [lng, lat];
+    for (const feat of blocksGeoJson.features) {
+      const geom = feat.geometry;
+      if (!geom) continue;
+      if (geom.type === 'Polygon') {
+        if (pointInRing(pt, geom.coordinates[0])) return feat.properties;
+      } else if (geom.type === 'MultiPolygon') {
+        for (const poly of geom.coordinates) {
+          if (pointInRing(pt, poly[0])) return feat.properties;
+        }
+      }
+    }
+    return null;
+  }
+
+  // Load Available Dates with Videos
+  async function initDates() {
+    const dateSelect = document.getElementById('dateSelect');
+    try {
+      const resp = await fetch('/api/video_dates');
+      const videoDates = await resp.json();
+
+      // Always support known survey dates; highlight ones with videos
+      const knownDates = [
+        { date: '20261104', label: '04 Nov 2026' },
+        { date: '20261103', label: '03 Nov 2026' },
+        { date: '20261105', label: '05 Nov 2026' },
+        { date: '20261106', label: '06 Nov 2026' }
+      ];
+
+      dateSelect.innerHTML = '';
+      const vidMap = {};
+      videoDates.forEach(v => vidMap[v.date] = v);
+
+      knownDates.forEach(kd => {
+        const info = vidMap[kd.date];
+        const opt = document.createElement('option');
+        opt.value = kd.date;
+        opt.textContent = info ? `${kd.label} (${info.count} Video)` : `${kd.label} (Belum ada video)`;
+        dateSelect.appendChild(opt);
+      });
+
+      // Default to 20261104 if available, else first with videos
+      if (vidMap['20261104']) {
+        currentDate = '20261104';
+      } else if (videoDates.length > 0) {
+        currentDate = videoDates[0].date;
+      }
+      dateSelect.value = currentDate;
+
+      dateSelect.addEventListener('change', () => {
+        loadDateData(dateSelect.value);
+      });
+
+      await loadDateData(currentDate);
+    } catch (err) {
+      console.error('Error loading dates:', err);
+    }
+  }
+
+  // Load Segments + Videos + Ground Truth for selected date
+  async function loadDateData(dateStr) {
+    currentDate = dateStr;
+    document.getElementById('segmentCountPill').textContent = 'Memuat data...';
+
+    // 1. Load Road Segments
+    try {
+      const segResp = await fetch(`data/data_${dateStr}.json`);
+      if (segResp.ok) {
+        const rawSegs = await segResp.json();
+        currentSegments = rawSegs.map((s, idx) => ({
+          ...s,
+          _idx: idx,
+          _startMs: s.start ? new Date(s.start).getTime() : 0,
+          _endMs: s.end ? new Date(s.end).getTime() : 0
+        }));
+      } else {
+        currentSegments = [];
+      }
+    } catch (err) {
+      currentSegments = [];
+    }
+
+    renderSegments();
+
+    // 2. Load Videos
+    try {
+      const vidResp = await fetch(`/api/videos?date=${dateStr}`);
+      currentVideos = await vidResp.json();
+      currentVideos.forEach(v => {
+        v._startMs = v.start_time ? new Date(v.start_time).getTime() : 0;
+        v._endMs = v.end_time ? new Date(v.end_time).getTime() : 0;
+      });
+    } catch (err) {
+      currentVideos = [];
+    }
+
+    populateVideoSelect();
+
+    // 3. Load Ground Truth Logs
+    await loadGroundTruthLogs();
+  }
+
+  function renderSegments() {
+    segmentsLayer.clearLayers();
+    activeHighlightLayer.clearLayers();
+
+    if (!currentSegments.length) {
+      document.getElementById('segmentCountPill').textContent = '0 segmen';
+      return;
+    }
+
+    let bounds = L.latLngBounds();
+    currentSegments.forEach((seg) => {
+      if (!seg.coords || seg.coords.length < 2) return;
+      const color = COLOR_MAP[seg.color] || '#3b82f6';
+      const line = L.polyline(seg.coords, {
+        color: color,
+        weight: 4,
+        opacity: 0.85
+      });
+
+      line.on('click', () => {
+        jumpToSegment(seg);
+      });
+
+      line.bindTooltip(`
+        <div style="font-size:11px;">
+          <strong>${seg.status || 'Unknown'}</strong><br>
+          Waktu: ${(seg.start || '').replace('T', ' ').slice(0, 19)}<br>
+          IRI: ${seg.iri} | Speed: ${seg.avg_speed} km/h<br>
+          <em>Klik untuk putar video di titik ini</em>
+        </div>
+      `);
+
+      line.addTo(segmentsLayer);
+      seg.coords.forEach(c => bounds.extend(c));
+    });
+
+    if (bounds.isValid()) {
+      map.fitBounds(bounds, { padding: [30, 30] });
+    }
+    document.getElementById('segmentCountPill').textContent = `${currentSegments.length} segmen jalan`;
+  }
+
+  function populateVideoSelect() {
+    const sel = document.getElementById('videoSelect');
+    sel.innerHTML = '';
+    if (!currentVideos.length) {
+      const opt = document.createElement('option');
+      opt.textContent = 'Tidak ada file video MP4';
+      sel.appendChild(opt);
+      document.getElementById('gtVideo').removeAttribute('src');
+      document.getElementById('videoHud').textContent = 'Tidak ada video untuk tanggal ini';
+      activeVideo = null;
+      return;
+    }
+
+    currentVideos.forEach((v, idx) => {
+      const st = v.start_time ? v.start_time.slice(11, 19) : '?';
+      const en = v.end_time ? v.end_time.slice(11, 19) : '?';
+      const opt = document.createElement('option');
+      opt.value = v.file;
+      opt.textContent = `${v.file} (${st} - ${en} | ${v.duration_formatted})`;
+      sel.appendChild(opt);
+    });
+
+    sel.onchange = () => {
+      const chosen = currentVideos.find(v => v.file === sel.value);
+      if (chosen) selectVideo(chosen, 0, false);
+    };
+
+    selectVideo(currentVideos[0], 0, false);
+  }
+
+  function selectVideo(videoObj, seekSeconds = 0, autoPlay = false) {
+    const vidEl = document.getElementById('gtVideo');
+    const isSameFile = activeVideo && activeVideo.file === videoObj.file;
+    activeVideo = videoObj;
+    document.getElementById('videoSelect').value = videoObj.file;
+
+    // Apply saved rotation for this video
+    const savedRot = (videoSettings[videoObj.file] && videoSettings[videoObj.file].rotation != null)
+      ? videoSettings[videoObj.file].rotation
+      : 0;
+    applyVideoRotation(savedRot);
+
+    if (!isSameFile) {
+      vidEl.src = videoObj.stream_url;
+      vidEl.load();
+      vidEl.onloadedmetadata = () => {
+        if (seekSeconds > 0) vidEl.currentTime = seekSeconds;
+        if (autoPlay) vidEl.play().catch(() => {});
+        applyVideoRotation(currentRotation);
+        syncMapToVideoTime();
+      };
+    } else {
+      vidEl.currentTime = seekSeconds;
+      if (autoPlay) vidEl.play().catch(() => {});
+      syncMapToVideoTime();
+    }
+  }
+
+  // Click segment -> Jump Video to exact timestamp
+  function jumpToSegment(seg) {
+    if (!seg._startMs || !currentVideos.length) {
+      alert('Video untuk segmen ini tidak tersedia.');
+      return;
+    }
+
+    // Find matching video covering seg._startMs (with 3s tolerance)
+    let matchedVid = currentVideos.find(v =>
+      seg._startMs >= (v._startMs - 3000) && seg._startMs <= (v._endMs + 3000)
+    );
+
+    if (!matchedVid) {
+      // Fallback: find closest video
+      alert(`Tidak ada video yang mencakup jam ${seg.start.slice(11, 19)}.`);
+      return;
+    }
+
+    const seekSec = Math.max(0, (seg._startMs - matchedVid._startMs) / 1000);
+    selectVideo(matchedVid, seekSec, true);
+  }
+
+  // Video -> Map Synchronization
+  let currentGpsMs = null;
+  let currentGpsTimestampStr = null;
+
+  function formatLocalTimestamp(ms) {
+    const dt = new Date(ms);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())} ${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
+  }
+
+  function syncMapToVideoTime() {
+    if (!activeVideo || !activeVideo._startMs) return;
+    const vidEl = document.getElementById('gtVideo');
+    const currentVideoSec = vidEl.currentTime || 0;
+    const currentWallMs = activeVideo._startMs + (currentVideoSec * 1000);
+
+    const pad = (n) => String(n).padStart(2, '0');
+    const vidMm = pad(Math.floor(currentVideoSec / 60));
+    const vidSs = pad(Math.floor(currentVideoSec % 60));
+
+    // Update custom seek bar
+    const seekBar = document.getElementById('videoSeekBar');
+    const dur = vidEl.duration || activeVideo.duration || 0;
+    if (seekBar && dur > 0) {
+      seekBar.max = dur;
+      seekBar.value = currentVideoSec;
+    }
+    const seekTimeEl = document.getElementById('seekTimeDisplay');
+    if (seekTimeEl) {
+      seekTimeEl.textContent = `${vidMm}:${vidSs} / ${activeVideo.duration_formatted}`;
+    }
+
+    // Find active GPS segment containing currentWallMs
+    let matchedSeg = null;
+    for (let i = 0; i < currentSegments.length; i++) {
+      const s = currentSegments[i];
+      if (currentWallMs >= s._startMs && currentWallMs <= s._endMs) {
+        matchedSeg = s;
+        break;
+      }
+    }
+
+    // If between segments, pick closest within 5 seconds
+    if (!matchedSeg && currentSegments.length) {
+      let bestDiff = 5000;
+      for (const s of currentSegments) {
+        const diff = Math.min(Math.abs(currentWallMs - s._startMs), Math.abs(currentWallMs - s._endMs));
+        if (diff < bestDiff) {
+          bestDiff = diff;
+          matchedSeg = s;
+        }
+      }
+    }
+
+    if (matchedSeg) {
+      // Timestamp comes from GPS segment bounds [matchedSeg._startMs, matchedSeg._endMs]
+      const gpsClampedMs = Math.max(matchedSeg._startMs, Math.min(matchedSeg._endMs, currentWallMs));
+      currentGpsMs = gpsClampedMs;
+      currentGpsTimestampStr = formatLocalTimestamp(gpsClampedMs);
+      const segStartTime = (matchedSeg.start || '').slice(11, 19);
+      const segEndTime = (matchedSeg.end || '').slice(11, 19);
+      document.getElementById('videoHud').textContent = `🛰️ GPS: ${currentGpsTimestampStr} (Seg ${segStartTime}–${segEndTime})`;
+      updateActiveTelemetry(matchedSeg, gpsClampedMs);
+    } else {
+      currentGpsMs = null;
+      currentGpsTimestampStr = null;
+      document.getElementById('videoHud').textContent = `🛰️ GPS: Tidak ada data GPS | Video ${vidMm}:${vidSs}`;
+      document.getElementById('sensorBadge').textContent = 'No GPS Match';
+      document.getElementById('sensorBadge').style.background = '#475569';
+    }
+  }
+
+  function updateActiveTelemetry(seg, currentWallMs) {
+    // Highlight segment on map if changed
+    if (!activeSegment || activeSegment.file !== seg.file) {
+      activeSegment = seg;
+      activeHighlightLayer.clearLayers();
+      if (seg.coords && seg.coords.length >= 2) {
+        L.polyline(seg.coords, {
+          color: '#06b6d4',
+          weight: 8,
+          opacity: 0.9
+        }).addTo(activeHighlightLayer);
+      }
+    }
+
+    // Interpolate GPS coordinates
+    if (seg.coords && seg.coords.length > 0) {
+      const durationMs = Math.max(1, seg._endMs - seg._startMs);
+      const ratio = Math.max(0, Math.min(1, (currentWallMs - seg._startMs) / durationMs));
+      const exactIdx = ratio * (seg.coords.length - 1);
+      const idx0 = Math.floor(exactIdx);
+      const idx1 = Math.min(seg.coords.length - 1, idx0 + 1);
+      const frac = exactIdx - idx0;
+
+      const lat = seg.coords[idx0][0] + (seg.coords[idx1][0] - seg.coords[idx0][0]) * frac;
+      const lng = seg.coords[idx0][1] + (seg.coords[idx1][1] - seg.coords[idx0][1]) * frac;
+      currentCarLatLng = [lat, lng];
+
+      if (!map.hasLayer(carMarker)) carMarker.addTo(map);
+      carMarker.setLatLng(currentCarLatLng);
+
+      if (autoFollowCar && !document.getElementById('gtVideo').paused) {
+        map.panTo(currentCarLatLng, { animate: true, duration: 0.25 });
+      }
+
+      document.getElementById('valCoord').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
+      // Detect active Estate Block
+      const blockProps = findBlockForLatLng(lat, lng);
+      activeBlockProps = blockProps;
+      if (blockProps) {
+        document.getElementById('activeBlockText').textContent =
+          `${blockProps.divisi || ''} — Blok ${blockProps.blok || '-'} (${blockProps.ukuran || ''})`;
+      } else {
+        document.getElementById('activeBlockText').textContent = 'Di luar / Perbatasan Blok';
+      }
+    }
+
+    // Update Telemetry numbers
+    document.getElementById('valIri').textContent = seg.iri != null ? Number(seg.iri).toFixed(2) : '-';
+    document.getElementById('valSpeed').textContent = seg.avg_speed != null ? `${Number(seg.avg_speed).toFixed(1)} km/h` : '-';
+    document.getElementById('valDist').textContent = seg.dist != null ? `${Number(seg.dist).toFixed(1)} m` : '-';
+    document.getElementById('activeFileText').textContent = seg.file || '-';
+
+    const badge = document.getElementById('sensorBadge');
+    badge.textContent = seg.status || 'Unknown';
+    badge.style.background = COLOR_MAP[seg.color] || '#475569';
+  }
+
+  // Video Controls
+  function togglePlay() {
+    const vid = document.getElementById('gtVideo');
+    if (vid.paused) vid.play();
+    else vid.pause();
+  }
+
+  function seekRelative(sec) {
+    const vid = document.getElementById('gtVideo');
+    vid.currentTime = Math.max(0, Math.min(vid.duration || 0, vid.currentTime + sec));
+    syncMapToVideoTime();
+  }
+
+  function setSpeed(rate, btn) {
+    document.getElementById('gtVideo').playbackRate = rate;
+    document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function onSeekBarInput(val) {
+    const vid = document.getElementById('gtVideo');
+    vid.currentTime = Number(val);
+    syncMapToVideoTime();
+  }
+
+  function toggleMute() {
+    const vid = document.getElementById('gtVideo');
+    vid.muted = !vid.muted;
+    document.getElementById('btnMute').textContent = vid.muted ? '🔇' : '🔊';
+  }
+
+  function toggleFullscreen() {
+    const wrapper = document.getElementById('videoWrapper');
+    if (!document.fullscreenElement) {
+      wrapper.requestFullscreen().then(() => applyVideoRotation(currentRotation)).catch(() => {});
+    } else {
+      document.exitFullscreen().then(() => applyVideoRotation(currentRotation)).catch(() => {});
+    }
+  }
+
+  async function loadVideoSettings() {
+    try {
+      const resp = await fetch('/api/video_settings');
+      videoSettings = await resp.json();
+      if (!videoSettings || typeof videoSettings !== 'object') videoSettings = {};
+    } catch (e) {
+      videoSettings = {};
+    }
+  }
+
+  function applyVideoRotation(deg) {
+    currentRotation = deg;
+    const vidEl = document.getElementById('gtVideo');
+    const wrapper = document.getElementById('videoWrapper');
+    document.querySelectorAll('.rotate-btn').forEach(b => {
+      b.classList.toggle('active', Number(b.getAttribute('data-deg')) === deg);
+    });
+
+    if (deg === 90 || deg === -90 || deg === 270) {
+      const w = wrapper.clientWidth || vidEl.clientWidth || 640;
+      const h = wrapper.clientHeight || vidEl.clientHeight || 360;
+      const scale = Math.min(h / w, w / h);
+      vidEl.style.transform = `rotate(${deg}deg) scale(${scale.toFixed(3)})`;
+    } else {
+      vidEl.style.transform = `rotate(${deg}deg)`;
+    }
+  }
+
+  async function setVideoRotation(deg) {
+    applyVideoRotation(deg);
+    if (activeVideo && activeVideo.file) {
+      if (!videoSettings[activeVideo.file]) videoSettings[activeVideo.file] = {};
+      videoSettings[activeVideo.file].rotation = deg;
+      try {
+        await fetch('/api/video_settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(videoSettings)
+        });
+      } catch (e) {
+        console.error('Failed to save video rotation:', e);
+      }
+    }
+  }
+
+  // Ground Truth Form & Auto-Save Persistence
+  function selectGtCond(btn) {
+    document.querySelectorAll('.gt-cond-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedGtCondition = btn.getAttribute('data-val');
+    saveGroundTruth(false);
+  }
+
+  function toggleSubCondition(btn) {
+    btn.classList.toggle('selected');
+    saveGroundTruth(false);
+  }
+
+  function toggleOtherSubCondition(btn) {
+    btn.classList.toggle('selected');
+    const row = document.getElementById('otherSubRow');
+    const isSelected = btn.classList.contains('selected');
+    row.style.display = isSelected ? 'flex' : 'none';
+    if (isSelected) {
+      document.getElementById('gtOtherSubInput').focus();
+    } else {
+      document.getElementById('gtOtherSubInput').value = '';
+      saveGroundTruth(false);
+    }
+  }
+
+  async function loadGroundTruthLogs() {
+    try {
+      const resp = await fetch(`/api/groundtruth?date=${currentDate}`);
+      groundTruthList = await resp.json();
+      if (!Array.isArray(groundTruthList)) groundTruthList = [];
+    } catch (e) {
+      groundTruthList = [];
+    }
+    renderGroundTruthLogs();
+  }
+
+  function setSaveStatus(msg, color = '#22c55e') {
+    const el = document.getElementById('gtSaveStatus');
+    if (el) {
+      el.textContent = msg;
+      el.style.color = color;
+    }
+  }
+
+  async function saveGroundTruth(forceNew = false) {
+    if (!activeVideo) {
+      if (forceNew) alert('Pilih / putar video terlebih dahulu.');
+      return;
+    }
+
+    const vidEl = document.getElementById('gtVideo');
+    const videoSec = Number((vidEl.currentTime || 0).toFixed(2));
+    const wallMs = currentGpsMs || (activeVideo._startMs + (videoSec * 1000));
+    const tsFormatted = currentGpsTimestampStr || formatLocalTimestamp(wallMs);
+
+    const subConditions = [];
+    document.querySelectorAll('#gtTagChips .tag-chip.selected').forEach(el => {
+      if (el.id !== 'btnOtherSub') {
+        subConditions.push(el.textContent);
+      }
+    });
+
+    const otherSub = document.getElementById('gtOtherSubInput').value.trim();
+    if (document.getElementById('btnOtherSub').classList.contains('selected') && otherSub) {
+      subConditions.push(`Lain-lain: ${otherSub}`);
+    }
+
+    const note = document.getElementById('gtNoteInput').value.trim();
+    const blockText = document.getElementById('activeBlockText').textContent;
+    const segFile = activeSegment ? activeSegment.file : '-';
+    const lat = currentCarLatLng ? Number(currentCarLatLng[0].toFixed(6)) : null;
+    const lng = currentCarLatLng ? Number(currentCarLatLng[1].toFixed(6)) : null;
+
+    // If not forced new, check if we already have a recent record for this exact segment or within 3s on same video
+    let existingIdx = -1;
+    if (!forceNew) {
+      existingIdx = groundTruthList.findIndex(item =>
+        item.video_file === activeVideo.file && (
+          (segFile !== '-' && item.segment_file === segFile) ||
+          Math.abs((item.video_sec || 0) - videoSec) <= 3.0
+        )
+      );
+    }
+
+    const entry = {
+      id: existingIdx >= 0 ? groundTruthList[existingIdx].id : `gt_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      date: currentDate,
+      timestamp: tsFormatted,
+      wall_ms: wallMs,
+      video_file: activeVideo.file,
+      video_sec: videoSec,
+      segment_file: segFile,
+      segment_idx: activeSegment ? activeSegment._idx : null,
+      sensor_status: activeSegment ? activeSegment.status : '-',
+      sensor_iri: activeSegment ? activeSegment.iri : null,
+      sensor_speed: activeSegment ? activeSegment.avg_speed : null,
+      visual_condition: selectedGtCondition,
+      sub_conditions: subConditions,
+      tags: subConditions,
+      other_sub_condition: otherSub || '',
+      note: note,
+      block_id: activeBlockProps ? (activeBlockProps.blok || null) : null,
+      divisi: activeBlockProps ? (activeBlockProps.divisi || null) : null,
+      estate: activeBlockProps ? (activeBlockProps.estate || null) : null,
+      block: blockText,
+      lat: lat,
+      lng: lng,
+      coordinates: (lat !== null && lng !== null) ? [lat, lng] : null,
+      updated_at: new Date().toISOString()
+    };
+
+    if (existingIdx >= 0) {
+      groundTruthList[existingIdx] = entry;
+    } else {
+      groundTruthList.unshift(entry);
+    }
+
+    setSaveStatus('Menyimpan...', '#eab308');
+    await persistGroundTruth();
+    setSaveStatus(`✅ Tersimpan (${tsFormatted.slice(11)})`, '#22c55e');
+
+    if (forceNew) {
+      document.getElementById('gtNoteInput').value = '';
+      document.getElementById('gtOtherSubInput').value = '';
+      document.getElementById('otherSubRow').style.display = 'none';
+      document.querySelectorAll('#gtTagChips .tag-chip.selected').forEach(el => el.classList.remove('selected'));
+    }
+    renderGroundTruthLogs();
+  }
+
+  async function deleteGroundTruth(id, event) {
+    event.stopPropagation();
+    groundTruthList = groundTruthList.filter(item => String(item.id) !== String(id));
+    await persistGroundTruth();
+    renderGroundTruthLogs();
+  }
+
+  async function persistGroundTruth() {
+    try {
+      await fetch(`/api/groundtruth?date=${currentDate}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(groundTruthList)
+      });
+    } catch (e) {
+      console.error('Failed to save ground truth:', e);
+    }
+  }
+
+  function renderGroundTruthLogs() {
+    const listEl = document.getElementById('gtLogList');
+    const countEl = document.getElementById('gtCount');
+    countEl.textContent = groundTruthList.length;
+
+    gtMarkersLayer.clearLayers();
+
+    if (!groundTruthList.length) {
+      listEl.innerHTML = `<div style="color: var(--text-muted); font-size: 11px; text-align: center; padding: 10px;">
+        Belum ada catatan ground-truth untuk tanggal ini.
+      </div>`;
+      return;
+    }
+
+    listEl.innerHTML = '';
+    groundTruthList.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'gt-log-item';
+      div.onclick = () => {
+        const vid = currentVideos.find(v => v.file === item.video_file);
+        if (vid) selectVideo(vid, item.video_sec, false);
+        if (item.lat && item.lng) map.setView([item.lat, item.lng], 17);
+      };
+
+      const tagsStr = item.tags && item.tags.length ? item.tags.join(', ') : 'Tanpa tag';
+      div.innerHTML = `
+        <div>
+          <div>
+            <strong>${item.visual_condition}</strong> vs <span style="color:var(--text-muted)">Sensor: ${item.sensor_status}</span>
+          </div>
+          <div class="gt-log-meta">
+            🕒 ${item.timestamp} | 🟩 ${item.block}<br>
+            🏷️ ${tagsStr} ${item.note ? '— "' + item.note + '"' : ''}
+          </div>
+        </div>
+        <button class="btn-del" title="Hapus" onclick="deleteGroundTruth('${item.id}', event)">✖</button>
+      `;
+      listEl.appendChild(div);
+
+      // Add pin marker on map
+      if (item.lat && item.lng) {
+        const m = L.circleMarker([item.lat, item.lng], {
+          radius: 6,
+          color: '#fff',
+          weight: 2,
+          fillColor: '#a855f7',
+          fillOpacity: 0.9
+        }).bindTooltip(`GT: ${item.visual_condition} (${item.timestamp.slice(11)})`);
+        m.on('click', () => {
+          const vid = currentVideos.find(v => v.file === item.video_file);
+          if (vid) selectVideo(vid, item.video_sec, false);
+        });
+        m.addTo(gtMarkersLayer);
+      }
+    });
+  }
+
+  function exportGroundTruthCSV() {
+    if (!groundTruthList.length) {
+      alert('Belum ada data ground-truth untuk di-export.');
+      return;
+    }
+    const headers = ['ID', 'Timestamp', 'Date', 'VideoFile', 'VideoSec', 'Estate', 'Divisi', 'BlockID', 'Block', 'SegmentFile', 'SegmentIdx', 'SensorStatus', 'SensorIRI', 'SensorSpeed', 'VisualCondition', 'SubConditions', 'Note', 'Lat', 'Lng'];
+    const rows = groundTruthList.map(r => [
+      r.id, r.timestamp, r.date, r.video_file, r.video_sec,
+      r.estate ?? '', r.divisi ?? '', r.block_id ?? '',
+      `"${(r.block || '').replace(/"/g, '""')}"`,
+      r.segment_file, r.segment_idx ?? '', r.sensor_status, r.sensor_iri ?? '', r.sensor_speed ?? '',
+      r.visual_condition, `"${(r.sub_conditions || r.tags || []).join('; ')}"`,
+      `"${(r.note || '').replace(/"/g, '""')}"`,
+      r.lat ?? '', r.lng ?? ''
+    ].join(','));
+
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `groundtruth_${currentDate}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Event Listeners & Startup
+  window.addEventListener('DOMContentLoaded', async () => {
+    initMap();
+    await loadVideoSettings();
+    await loadBlocks();
+    await initDates();
+
+    const vidEl = document.getElementById('gtVideo');
+    vidEl.addEventListener('timeupdate', syncMapToVideoTime);
+    vidEl.addEventListener('play', () => {
+      document.getElementById('btnPlayPause').textContent = '⏸ Pause';
+    });
+    vidEl.addEventListener('pause', () => {
+      document.getElementById('btnPlayPause').textContent = '▶ Play';
+    });
+
+    // High-frequency sync timer during playback (10Hz) for smooth car movement
+    setInterval(() => {
+      if (!vidEl.paused && !vidEl.ended) {
+        syncMapToVideoTime();
+      }
+    }, 100);
+
+    // Header toggles
+    document.getElementById('btnAutoFollow').addEventListener('click', function () {
+      autoFollowCar = !autoFollowCar;
+      this.textContent = autoFollowCar ? '📍 Follow Car: ON' : '📍 Follow Car: OFF';
+      this.classList.toggle('btn-active', autoFollowCar);
+    });
+
+    document.getElementById('btnToggleBlocks').addEventListener('click', function () {
+      showBlocks = !showBlocks;
+      this.textContent = showBlocks ? '🟩 Blok: ON' : '🟩 Blok: OFF';
+      this.classList.toggle('btn-active', showBlocks);
+      renderBlocks();
+    });
+
+    // Keyboard shortcuts (Space to play/pause, Left/Right arrows to seek)
+    document.addEventListener('keydown', (e) => {
+      if (document.activeElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        togglePlay();
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault();
+        seekRelative(-3);
+      } else if (e.code === 'ArrowRight') {
+        e.preventDefault();
+        seekRelative(3);
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+    });
+  });
+</script>
+</body>
+</html>
+

@@ -1,0 +1,236 @@
+{
+  "description": "Calibrated video filename manifest matched to GPS timestamps by exact file size.",
+  "video_root": "D:\\RoSe\\Video",
+  "dates": {
+    "03 Nov 2026": [
+      {
+        "target_filename": "20261103_143624.mp4",
+        "size_bytes": 438819834,
+        "size_mb": 418.49,
+        "duration_sec": 359.92
+      },
+      {
+        "target_filename": "20261103_144240.mp4",
+        "size_bytes": 585169173,
+        "size_mb": 558.06,
+        "duration_sec": 481.43
+      },
+      {
+        "target_filename": "20261103_145135.mp4",
+        "size_bytes": 324651665,
+        "size_mb": 309.61,
+        "duration_sec": 266.96
+      },
+      {
+        "target_filename": "20261103_150709.mp4",
+        "size_bytes": 213329241,
+        "size_mb": 203.45,
+        "duration_sec": 174.91
+      },
+      {
+        "target_filename": "20261103_151108.mp4",
+        "size_bytes": 316603644,
+        "size_mb": 301.94,
+        "duration_sec": 259.87
+      },
+      {
+        "target_filename": "20261103_151609.mp4",
+        "size_bytes": 497911978,
+        "size_mb": 474.85,
+        "duration_sec": 409.3
+      },
+      {
+        "target_filename": "20261103_152352.mp4",
+        "size_bytes": 84998084,
+        "size_mb": 81.06,
+        "duration_sec": 69.57
+      },
+      {
+        "target_filename": "20261103_152511.mp4",
+        "size_bytes": 902942928,
+        "size_mb": 861.11,
+        "duration_sec": 743.18
+      },
+      {
+        "target_filename": "20261103_153941.mp4",
+        "size_bytes": 163745770,
+        "size_mb": 156.16,
+        "duration_sec": 134.21
+      },
+      {
+        "target_filename": "20261103_154343.mp4",
+        "size_bytes": 416539488,
+        "size_mb": 397.24,
+        "duration_sec": 345.43
+      },
+      {
+        "target_filename": "20261103_155015.mp4",
+        "size_bytes": 198443240,
+        "size_mb": 189.25,
+        "duration_sec": 162.9
+      },
+      {
+        "target_filename": "20261103_155745.mp4",
+        "size_bytes": 276591922,
+        "size_mb": 263.78,
+        "duration_sec": 227.27
+      }
+    ],
+    "04 Nov 2026": [
+      {
+        "target_filename": "20261104_094959.mp4",
+        "size_bytes": 1997199963,
+        "size_mb": 1904.68,
+        "duration_sec": 1299.92
+      },
+      {
+        "target_filename": "20261104_101154.mp4",
+        "size_bytes": 454771474,
+        "size_mb": 433.7,
+        "duration_sec": 296.96
+      },
+      {
+        "target_filename": "20261104_102008.mp4",
+        "size_bytes": 1694716030,
+        "size_mb": 1616.21,
+        "duration_sec": 1106.06
+      },
+      {
+        "target_filename": "20261104_103900.mp4",
+        "size_bytes": 2035433216,
+        "size_mb": 1941.14,
+        "duration_sec": 1451.59
+      },
+      {
+        "target_filename": "20261104_115946.mp4",
+        "size_bytes": 1642984134,
+        "size_mb": 1566.87,
+        "duration_sec": 1085.53
+      },
+      {
+        "target_filename": "20261104_124509.mp4",
+        "size_bytes": 513525893,
+        "size_mb": 489.74,
+        "duration_sec": 335.71
+      },
+      {
+        "target_filename": "20261104_125106.mp4",
+        "size_bytes": 1922138120,
+        "size_mb": 1833.09,
+        "duration_sec": 1263.69
+      }
+    ],
+    "05 Nov 2026": [
+      {
+        "target_filename": "20261105_092637.mp4",
+        "size_bytes": 1481167640,
+        "size_mb": 1412.55,
+        "duration_sec": 893.36
+      },
+      {
+        "target_filename": "20261105_094221.mp4",
+        "size_bytes": 2803472845,
+        "size_mb": 2673.6,
+        "duration_sec": 1757.18
+      },
+      {
+        "target_filename": "20261105_101218.mp4",
+        "size_bytes": 1508718162,
+        "size_mb": 1438.83,
+        "duration_sec": 984.53
+      },
+      {
+        "target_filename": "20261105_102845.mp4",
+        "size_bytes": 293710512,
+        "size_mb": 280.1,
+        "duration_sec": 190.36
+      },
+      {
+        "target_filename": "20261105_103615.mp4",
+        "size_bytes": 1638350367,
+        "size_mb": 1562.45,
+        "duration_sec": 1069.13
+      },
+      {
+        "target_filename": "20261105_105406.mp4",
+        "size_bytes": 263538945,
+        "size_mb": 251.33,
+        "duration_sec": 172.22
+      },
+      {
+        "target_filename": "20261105_105821.mp4",
+        "size_bytes": 564714073,
+        "size_mb": 538.55,
+        "duration_sec": 370.25
+      },
+      {
+        "target_filename": "20261105_110433.mp4",
+        "size_bytes": 2446272040,
+        "size_mb": 2332.95,
+        "duration_sec": 1571.65
+      },
+      {
+        "target_filename": "20261105_113044.mp4",
+        "size_bytes": 2165000267,
+        "size_mb": 2064.71,
+        "duration_sec": 1427.91
+      },
+      {
+        "target_filename": "20261105_154801.mp4",
+        "size_bytes": 328119248,
+        "size_mb": 312.92,
+        "duration_sec": 229.94
+      },
+      {
+        "target_filename": "20261105_155432.mp4",
+        "size_bytes": 595188508,
+        "size_mb": 567.62,
+        "duration_sec": 396.51
+      },
+      {
+        "target_filename": "20261105_163410.mp4",
+        "size_bytes": 3563216659,
+        "size_mb": 3398.15,
+        "duration_sec": 2325.51
+      },
+      {
+        "target_filename": "20261105_175655.mp4",
+        "size_bytes": 748881939,
+        "size_mb": 714.19,
+        "duration_sec": 1266.34
+      }
+    ],
+    "06 Nov 2026": [
+      {
+        "target_filename": "20261106_094104.mp4",
+        "size_bytes": 1858147763,
+        "size_mb": 1772.07,
+        "duration_sec": 1108.53
+      },
+      {
+        "target_filename": "20261106_100003.mp4",
+        "size_bytes": 1115667029,
+        "size_mb": 1063.98,
+        "duration_sec": 695.06
+      },
+      {
+        "target_filename": "20261106_101145.mp4",
+        "size_bytes": 1465096417,
+        "size_mb": 1397.22,
+        "duration_sec": 938.04
+      },
+      {
+        "target_filename": "20261106_103019.mp4",
+        "size_bytes": 1998377479,
+        "size_mb": 1905.8,
+        "duration_sec": 1304.17
+      },
+      {
+        "target_filename": "20261106_105205.mp4",
+        "size_bytes": 2084904529,
+        "size_mb": 1988.32,
+        "duration_sec": 1363.4
+      }
+    ]
+  }
+}
